@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "Application.h"
 #include "UIText.h"
 #include "Utils/Validator.h" // <-- 包含新的验证模块

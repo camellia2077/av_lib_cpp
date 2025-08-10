@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "App/Application.h"
 #include "View/ImGuiView.h"
 #include <memory>

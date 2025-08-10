@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "FastQueryDB.h"
 #include <fstream>
 #include <iostream>

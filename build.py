@@ -3,16 +3,16 @@ import sys
 import subprocess
 import pathlib
 import platform
+import shutil
+import time  # 1. 导入 time 模块
 
 # --- 配置 ---
-# CMAKE 构建目录的名称
 BUILD_DIR = "build"
 
 def run_command(command):
     """辅助函数：打印并执行一个命令，如果失败则退出程序"""
     print(f"--- Executing: {' '.join(command)}")
     try:
-        # 使用 check=True，如果命令返回非零退出码（表示错误），会自动抛出异常
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         print(f"--- !!! 命令执行失败，返回码: {e.returncode}", file=sys.stderr)
@@ -24,44 +24,46 @@ def run_command(command):
 
 def main():
     """主构建函数"""
-    # 1. 切换到脚本所在的目录
-    # 这是确保所有相对路径（如"."和BUILD_DIR）都正确的关键步骤
+    # 2. 在所有操作开始前，记录开始时间
+    start_time = time.monotonic()
+
     script_path = pathlib.Path(__file__).resolve().parent
     os.chdir(script_path)
     print(f"--- 已切换到工作目录: {os.getcwd()}")
 
-    # 2. 创建构建目录（如果它不存在）
     build_path = pathlib.Path(BUILD_DIR)
     build_path.mkdir(exist_ok=True)
-    print(f"--- 构建目录 '{BUILD_DIR}' 已准备就绪。")
+    print(f"--- 构建目录 '{BUILD_DIR}' 已准备就绪 (不清空)。")
     
-    # 3. 配置CMake (cmake -S . -B build)
-    #    -S .       指定源码根目录为当前目录
-    #    -B build   指定构建目录
+    # 配置CMake
     cmake_configure_command = ["cmake", "-S", ".", "-B", str(build_path)]
     
-    # 可选：为不同平台添加特定的生成器 (Generator)
-    # 在Windows上，使用Visual Studio通常更好
-    if platform.system() == "Windows":
-        # 你可以根据你安装的Visual Studio版本进行修改
-        # 例如 "Visual Studio 17 2022" 或 "Visual Studio 16 2019"
-        # 如果不指定，CMake会尝试找到一个可用的
-        pass # 留空让CMake自动检测
-    # 在Linux或macOS上，"Unix Makefiles" 是默认的，通常无需指定
-    elif platform.system() == "Linux" or platform.system() == "Darwin":
+    if shutil.which("ccache"):
+        print("--- 检测到 ccache，自动启用。")
+        cmake_configure_command.append("-D CMAKE_CXX_COMPILER_LAUNCHER=ccache")
+    else:
+        print("--- 未检测到 ccache，将使用默认编译器。")
+
+    if platform.system() == "Linux" or platform.system() == "Darwin":
         cmake_configure_command.extend(["-G", "Unix Makefiles"])
 
     run_command(cmake_configure_command)
 
-    # 4. 执行编译 (cmake --build build)
-    #    --build  告诉cmake执行构建步骤
-    #    --config Release  (可选)指定构建类型为Release，以获得优化
+    # 执行编译
     cmake_build_command = ["cmake", "--build", str(build_path), "--config", "Release"]
     
     run_command(cmake_build_command)
 
+    # 3. 在所有操作结束后，记录结束时间并计算差值
+    end_time = time.monotonic()
+    duration = end_time - start_time
+
     print("\n--- ✅ 构建成功！ ---")
-    print(f"--- 可执行文件位于 '{BUILD_DIR}' 目录中。 ---")
+    # 我们已经修改了CMakeLists.txt，所以这里的提示也更新一下
+    print(f"--- 可执行文件位于 '{BUILD_DIR}/bin' 目录中。 ---") 
+    print("--- 提示: 第一次编译会较慢，后续修改代码后的编译会因为缓存而加速。")
+    # 4. 打印总耗时
+    print(f"--- 总耗时: {duration:.2f} 秒 ---")
 
 
 if __name__ == "__main__":
