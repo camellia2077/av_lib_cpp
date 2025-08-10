@@ -1,6 +1,6 @@
 #include "common/pch.h"
 #include "ImGuiView.h"
-#include "UIConfig.h" // <-- 确保包含了配置文件
+#include "UIConfig.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -10,6 +10,20 @@
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "Glfw Error " << error << ": " << description << std::endl;
 }
+
+// --- 设置圆角样式的函数 ---
+static void SetupRoundedStyle() {
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    // 直接使用配置文件中的值
+    style.WindowRounding    = UIConfig::CornerRounding;
+    style.ChildRounding     = UIConfig::CornerRounding;
+    style.FrameRounding     = UIConfig::CornerRounding;
+    style.PopupRounding     = UIConfig::CornerRounding;
+    style.GrabRounding      = UIConfig::CornerRounding;
+    style.TabRounding       = UIConfig::CornerRounding;
+}
+
 
 ImGuiView::ImGuiView(Application& app) : app_(app), window_(nullptr) {}
 
@@ -21,7 +35,6 @@ bool ImGuiView::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    // 使用 UIConfig.h 中的配置
     window_ = glfwCreateWindow(600, 450, UIConfig::MainWindowTitle, nullptr, nullptr);
     if (window_ == nullptr) return false;
     glfwMakeContextCurrent(window_);
@@ -31,10 +44,10 @@ bool ImGuiView::init() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     
-    // 使用 UIConfig.h 中的配置加载字体
     io.Fonts->AddFontFromFileTTF(UIConfig::FontPath, UIConfig::DefaultFontSize, nullptr, io.Fonts->GetGlyphRangesChineseFull());
 
     ImGui::StyleColorsDark();
+    SetupRoundedStyle(); //
 
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
@@ -42,6 +55,7 @@ bool ImGuiView::init() {
     return true;
 }
 
+// ... (run, render_frame, 和 cleanup 函数保持不变)
 void ImGuiView::run() {
     app_.load_database();
 
@@ -113,7 +127,7 @@ void ImGuiView::render_frame() {
     ImGui::SameLine();
     // 将按钮绑定到新的 perform_create_database 函数
     if (ImGui::Button(UIConfig::CreateNewDbButton)) {
-        app_.perform_create_database(); // <-- 关键修改
+        app_.perform_create_database();
     }
     
     ImGui::Separator();

@@ -8,9 +8,11 @@ namespace UIConfig {
     constexpr float DefaultFontSize = 36.0f;
     constexpr const char* FontPath = "fonts/NotoSansSC-Regular.ttf";
     constexpr const char* MainWindowTitle = "查询av是否重复工具";
+    constexpr float CornerRounding = 14.0f; // 圆角半径配置在此处
 
     // --- 通用信息文本 ---
     constexpr std::string_view Welcome = "欢迎使用! 请操作.";
+    // ... (文件其余部分保持不变)
     constexpr std::string_view DBLoadSuccess = "默认数据库加载成功.";
 
     // --- 数据库选择区域 ---
