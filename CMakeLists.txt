@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -------------------------------------------------------------------
 # --- 手动为 ImGui 创建库 (此部分无需改动) ---
-add_library(imgui
+add_library(imgui SHARED
     lib/imgui/imgui.cpp
     lib/imgui/imgui_draw.cpp
     lib/imgui/imgui_tables.cpp
@@ -18,9 +18,16 @@ add_library(imgui
     lib/imgui/backends/imgui_impl_glfw.cpp
     lib/imgui/backends/imgui_impl_opengl3.cpp
 )
+
+# [新增] 为 imgui 库添加它自己的头文件搜索路径
 target_include_directories(imgui PUBLIC
     lib/imgui
     lib/imgui/backends
+)
+# [新增] 为 imgui 库链接它所依赖的库
+target_link_libraries(imgui PUBLIC
+    glfw
+    ${OPENGL_LIBRARIES}
 )
 # -------------------------------------------------------------------
 
@@ -53,6 +60,12 @@ target_include_directories(MyApp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common
 )
 
+# --- [新增] 为 MyApp 添加特定的编译选项 ---
+target_compile_options(MyApp PRIVATE
+    -Os
+    -march=native
+)
+
 # --- 使用 target_precompile_headers 配置 PCH (保持不变) ---
 # 直接将 pch.h 文件设置为预编译头。CMake 会自动处理生成和使用。
 target_precompile_headers(MyApp PRIVATE
@@ -63,5 +76,6 @@ target_precompile_headers(MyApp PRIVATE
 target_link_libraries(MyApp PRIVATE
     imgui               # ImGui 库本身
     glfw                # GLFW 窗口库
+    "-s"
     ${OPENGL_LIBRARIES} # OpenGL
 )

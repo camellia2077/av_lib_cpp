@@ -37,6 +37,9 @@ def main():
     
     # 配置CMake
     cmake_configure_command = ["cmake", "-S", ".", "-B", str(build_path)]
+    cmake_configure_command.append("-D CMAKE_BUILD_TYPE=Release")
+    # [新增] 添加参数以链接GLFW的动态库
+    cmake_configure_command.append("-Dglfw3_SHARED_LIBS=ON")
     
     if shutil.which("ccache"):
         print("--- 检测到 ccache，自动启用。")
