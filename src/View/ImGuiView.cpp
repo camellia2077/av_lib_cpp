@@ -2,26 +2,67 @@
 #include "ImGuiView.h"
 #include "UIConfig.h"
 #include "imgui.h"
+#include "imgui_internal.h" // 需要包含 internal 头文件以使用设置处理器
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+// --- 主题定义 ---
+enum Theme {
+    THEME_DARK,
+    THEME_LIGHT,
+    THEME_CLASSIC
+};
+
+// 全局静态变量，用于存储当前主题的选择，默认为暗色主题
+static int g_CurrentThemeIndex = THEME_CLASSIC;
+// THEME_DARK;
+
+// --- 主题应用函数 ---
+static void ApplyTheme(int themeIndex) {
+    g_CurrentThemeIndex = themeIndex;
+    switch (themeIndex) {
+        case THEME_DARK:    ImGui::StyleColorsDark();     break;
+        case THEME_LIGHT:   ImGui::StyleColorsLight();    break;
+        case THEME_CLASSIC: ImGui::StyleColorsClassic();  break;
+        default:            ImGui::StyleColorsDark();     break;
+    }
+}
+
+// --- 错误回调和圆角样式 ---
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "Glfw Error " << error << ": " << description << std::endl;
 }
 
-// --- 设置圆角样式的函数 ---
 static void SetupRoundedStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
-
-    // 直接使用配置文件中的值
     style.WindowRounding    = UIConfig::CornerRounding;
     style.ChildRounding     = UIConfig::CornerRounding;
     style.FrameRounding     = UIConfig::CornerRounding;
     style.PopupRounding     = UIConfig::CornerRounding;
     style.GrabRounding      = UIConfig::CornerRounding;
     style.TabRounding       = UIConfig::CornerRounding;
+}
+
+
+// --- 自定义设置处理器 (保持不变) ---
+static void* ThemeSettings_ReadOpen(ImGuiContext* ctx, ImGuiSettingsHandler* handler, const char* name) {
+    return &g_CurrentThemeIndex;
+}
+
+static void ThemeSettings_ReadLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* entry, const char* line) {
+    int theme_index;
+    if (sscanf(line, "Theme=%d", &theme_index) == 1) {
+        ApplyTheme(theme_index);
+    }
+}
+
+static void ThemeSettings_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf) {
+    buf->reserve(buf->size() + 50);
+    buf->appendf("[%s][State]\n", handler->TypeName);
+    buf->appendf("Theme=%d\n", g_CurrentThemeIndex);
+    buf->append("\n");
 }
 
 
@@ -35,7 +76,7 @@ bool ImGuiView::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    window_ = glfwCreateWindow(600, 450, UIConfig::MainWindowTitle, nullptr, nullptr);
+    window_ = glfwCreateWindow(600, 500, UIConfig::MainWindowTitle, nullptr, nullptr);
     if (window_ == nullptr) return false;
     glfwMakeContextCurrent(window_);
     glfwSwapInterval(1);
@@ -43,11 +84,20 @@ bool ImGuiView::init() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = "imgui.ini";
     
+    ImGuiSettingsHandler ini_handler;
+    ini_handler.TypeName = "AppSettings";
+    ini_handler.TypeHash = ImHashStr("AppSettings");
+    ini_handler.ReadOpenFn = ThemeSettings_ReadOpen;
+    ini_handler.ReadLineFn = ThemeSettings_ReadLine;
+    ini_handler.WriteAllFn = ThemeSettings_WriteAll;
+    ImGui::AddSettingsHandler(&ini_handler);
+
     io.Fonts->AddFontFromFileTTF(UIConfig::FontPath, UIConfig::DefaultFontSize, nullptr, io.Fonts->GetGlyphRangesChineseFull());
 
-    ImGui::StyleColorsDark();
-    SetupRoundedStyle(); //
+    ApplyTheme(g_CurrentThemeIndex);
+    SetupRoundedStyle();
 
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
@@ -55,7 +105,6 @@ bool ImGuiView::init() {
     return true;
 }
 
-// ... (run, render_frame, 和 cleanup 函数保持不变)
 void ImGuiView::run() {
     app_.load_database();
 
@@ -75,7 +124,9 @@ void ImGuiView::render_frame() {
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     ImGui::Begin("主面板", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-    // (数据库选择、编号存入、查询等部分代码保持不变...)
+    // --- 关键修改：将两个下拉菜单都放到顶部 ---
+
+    // 1. 数据库选择
     ImGui::Text(UIConfig::CurrentDbLabel);
     std::vector<std::string> db_names = app_.get_database_names();
     const std::string& current_db = app_.get_current_db_name();
@@ -92,15 +143,22 @@ void ImGuiView::render_frame() {
         ImGui::EndCombo();
     }
     
-    ImGui::Separator();
+    // 2. 主题选择
+    const char* themes[] = { "默认暗色 (Dark)", "明亮 (Light)", "经典复古 (Classic)" };
+    if (ImGui::Combo("主题选择", &g_CurrentThemeIndex, themes, IM_ARRAYSIZE(themes))) {
+        ApplyTheme(g_CurrentThemeIndex);
+        SetupRoundedStyle(); // 切换主题后需要重新应用圆角
+        ImGui::MarkIniSettingsDirty(); // 标记以便保存
+    }
 
-    // --- 编号存入区域 ---
+    ImGui::Separator(); // 在顶部设置区下方加一个分隔线
+
+    // (其余的UI部分保持不变...)
     ImGui::Text(UIConfig::AddSectionHeader);
     
     char add_buf[128];
     strncpy(add_buf, app_.get_add_buffer(), 128);
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
-    // 按回车键现在也只执行添加操作
     if (ImGui::InputText("##add_id", add_buf, IM_ARRAYSIZE(add_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
         app_.set_add_buffer(add_buf);
         app_.perform_add();
@@ -109,14 +167,12 @@ void ImGuiView::render_frame() {
     
     ImGui::PopItemWidth();
     ImGui::SameLine();
-    // 这个按钮现在是唯一的添加数据的方式
     if (ImGui::Button(UIConfig::AddToCurrentDbButton)) {
         app_.perform_add();
     }
     
     ImGui::Spacing();
     
-    // --- 数据库创建区域 ---
     char new_db_buf[128];
     strncpy(new_db_buf, app_.get_new_db_name_buffer(), 128);
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
@@ -125,7 +181,6 @@ void ImGuiView::render_frame() {
     
     ImGui::PopItemWidth();
     ImGui::SameLine();
-    // 将按钮绑定到新的 perform_create_database 函数
     if (ImGui::Button(UIConfig::CreateNewDbButton)) {
         app_.perform_create_database();
     }
@@ -150,12 +205,9 @@ void ImGuiView::render_frame() {
     
     ImGui::Separator();
     
-    // --- 状态信息区域 ---
     ImGui::Text(UIConfig::StatusLabel, app_.get_status_message().c_str());
     ImGui::Text(UIConfig::TotalRecordsLabel, app_.get_total_records());
-
-    // --- 新增：显示当前加载的字体 ---
-    ImGui::Separator(); // 加一个分隔线以示区分
+    ImGui::Separator();
     ImGui::Text("Loaded Font: %s", UIConfig::FontPath);
 
 
