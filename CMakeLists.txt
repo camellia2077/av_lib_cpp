@@ -46,8 +46,10 @@ add_executable(MyApp WIN32
     src/View/ImGuiView.cpp
     src/View/ImGuiView.h
     src/View/IGuiView.h
+    # 新增的 Utils 层
+    src/Utils/Validator.cpp
+    src/Utils/Validator.h
 )
-
 # --- 链接所有需要的库 ---
 # 这里的代码无需改动，它现在会链接到我们上面手动创建的 imgui 库
 target_link_libraries(MyApp PRIVATE
