@@ -28,34 +28,38 @@ target_include_directories(imgui PUBLIC
 find_package(glfw3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
+# --- [核心修改] 使用 file(GLOB ...) 自动发现源文件 ---
+# 为每个逻辑目录（层）创建一个源文件列表变量
+file(GLOB APP_SOURCES "src/App/*.cpp")
+file(GLOB DATA_SOURCES "src/Data/*.cpp")
+file(GLOB VIEW_SOURCES "src/View/ImGui/*.cpp")
+file(GLOB UTILS_SOURCES "src/Utils/*.cpp")
+
+
 # --- 定义可执行文件 ---
-# 最佳实践：只列出.cpp源文件，不列出.h文件，也不需要pch.cpp
+# 将所有源文件列表和 main.cpp 一起加入
 add_executable(MyApp WIN32
     src/main.cpp
-    # App 层
-    src/App/Application.cpp
-    # Data 层
-    src/Data/FastQueryDB.cpp
-    # View 层
-    src/View/ImGuiView.cpp
-    # Utils 层
-    src/Utils/Validator.cpp
+    ${APP_SOURCES}
+    ${DATA_SOURCES}
+    ${VIEW_SOURCES}
+    ${UTILS_SOURCES}
 )
 
-# --- [核心改动 1] 添加头文件搜索路径 ---
+# --- 添加头文件搜索路径 (保持不变) ---
 # 将根src目录和新的common目录都加入，以便#include能正确找到所有头文件
 target_include_directories(MyApp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common # <-- 新增此行
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common
 )
 
-# --- [核心改动 2] 使用 target_precompile_headers 配置 PCH ---
+# --- 使用 target_precompile_headers 配置 PCH (保持不变) ---
 # 直接将 pch.h 文件设置为预编译头。CMake 会自动处理生成和使用。
 target_precompile_headers(MyApp PRIVATE
-    "src/common/pch.h" # <-- CMake 会在 include directories 中查找它
+    "src/common/pch.h"
 )
 
-# --- 链接所有需要的库 (此部分无需改动) ---
+# --- 链接所有需要的库 (保持不变) ---
 target_link_libraries(MyApp PRIVATE
     imgui               # ImGui 库本身
     glfw                # GLFW 窗口库

@@ -1,6 +1,6 @@
 #include "common/pch.h"
 #include "App/Application.h"
-#include "View/ImGuiView.h"
+#include "View/ImGui/ImGuiView.h"
 #include <memory>
 
 int main(int, char**) {

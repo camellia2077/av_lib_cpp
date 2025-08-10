@@ -19,6 +19,7 @@ Thumbs.db
 # 忽略编译产物
 *.exe
 *.ini
+*.ini
 *.dll
 *.o
 *.obj
