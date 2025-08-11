@@ -1,5 +1,6 @@
 #include "DatabaseManager.h"
 #include <filesystem> // 引入 <filesystem>
+#include <string>     // 确保包含 <string>
 
 DatabaseManager::DatabaseManager() {
     // 默认数据库名称
@@ -13,12 +14,13 @@ void DatabaseManager::load_default_database() {
 }
 
 bool DatabaseManager::create_database(const std::string& db_name_raw) {
-    // --- 修改点：使用 std::filesystem 来处理路径 ---
-    std::filesystem::path db_path(db_name_raw);
-    if (!db_path.has_extension() || db_path.extension() != ".bin") {
-        db_path.replace_extension(".bin");
+    std::string new_db_name = db_name_raw;
+
+    // --- 修改点：使用 C++23 的 std::string::contains ---
+    // 如果原始名称不包含 ".bin"，则给它添加一个
+    if (!db_name_raw.contains(".bin")) {
+        new_db_name += ".bin";
     }
-    std::string new_db_name = db_path.string();
     // --- 修改结束 ---
 
     if (dbs_.count(new_db_name)) {
@@ -44,6 +46,7 @@ bool DatabaseManager::switch_to_database(const std::string& db_name) {
 }
 
 bool DatabaseManager::database_exists(const std::string& db_name) const {
+    // C++20 之后，map::count 在性能上和 map::contains 几乎一样
     return dbs_.count(db_name) > 0;
 }
 
