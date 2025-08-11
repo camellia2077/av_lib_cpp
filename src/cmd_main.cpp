@@ -1,3 +1,4 @@
+#include "common/cmd_pch.h"
 #include "App/Application.h"
 #include <iostream>
 #include <limits>
