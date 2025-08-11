@@ -16,7 +16,7 @@ assitance_tools/
 .DS_Store
 Thumbs.db
 
-# 忽略编译产物
+*.bin
 *.exe
 *.ini
 *.ini

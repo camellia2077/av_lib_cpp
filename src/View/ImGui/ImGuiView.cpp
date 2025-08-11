@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <sstream> // for stringstream
+#include "common/MessageFormatter.h"
 
 // --- 主题定义 (保持不变) ---
 enum Theme { THEME_DARK, THEME_LIGHT, THEME_CLASSIC };
@@ -102,25 +103,8 @@ void ImGuiView::run() {
 
 void ImGuiView::update_status_message() {
     // 核心逻辑：将 AppStatus 翻译成 UI 文本
-    AppStatus status = app_.get_status();
-    const auto& result = app_.get_operation_result();
-
-    switch (status) {
-        case AppStatus::Idle:             status_message_ = UIConfig::Messages::Idle; break;
-        case AppStatus::Welcome:          status_message_ = UIConfig::Messages::Welcome; break;
-        case AppStatus::DBLoadSuccess:    status_message_ = UIConfig::Messages::DBLoadSuccess; break;
-        case AppStatus::DBSwitched:       status_message_ = UIConfig::Messages::dbSwitched(app_.get_current_db_name()); break;
-        case AppStatus::DBCreated:        status_message_ = UIConfig::Messages::dbCreated(app_.get_current_db_name()); break;
-        case AppStatus::AddCompleted:     status_message_ = UIConfig::Messages::addCompleted(result); break;
-        case AppStatus::QueryCompleted:   status_message_ = UIConfig::Messages::queryCompleted(result); break;
-        case AppStatus::ErrorDBNotExist:  status_message_ = UIConfig::Messages::ErrorDBNotExist; break;
-        case AppStatus::ErrorDBCreateFailed: status_message_ = UIConfig::Messages::ErrorDBCreateFailed; break;
-        case AppStatus::ErrorDBNameExists: status_message_ = UIConfig::Messages::ErrorDBNameExists; break;
-        case AppStatus::ErrorDBNameEmpty: status_message_ = UIConfig::Messages::ErrorDBNameEmpty; break;
-        case AppStatus::ErrorAddIDEmpty:  status_message_ = UIConfig::Messages::ErrorAddIDEmpty; break;
-        case AppStatus::ErrorQueryIDEmpty: status_message_ = UIConfig::Messages::ErrorQueryIDEmpty; break;
-        default: status_message_ = "未知状态。"; break;
-    }
+    // 直接调用 MessageFormatter 来获取格式化后的消息
+    status_message_ = MessageFormatter::format_message(app_);
 }
 
 void ImGuiView::render_frame() {

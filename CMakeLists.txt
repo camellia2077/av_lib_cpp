@@ -34,6 +34,7 @@ file(GLOB APP_SOURCES "src/App/*.cpp")
 file(GLOB DATA_SOURCES "src/Data/*.cpp")
 file(GLOB VIEW_SOURCES "src/View/ImGui/*.cpp")
 file(GLOB UTILS_SOURCES "src/Utils/*.cpp")
+file(GLOB COMMON_SOURCES "src/common/*.cpp") 
 
 
 # --- 定义可执行文件 ---
@@ -45,6 +46,7 @@ add_executable(MyApp WIN32
     ${DATA_SOURCES}
     ${VIEW_SOURCES}
     ${UTILS_SOURCES}
+    ${COMMON_SOURCES}
 )
 
 # 2. 命令行版本 (MyApp_Cmd)
@@ -54,6 +56,7 @@ add_executable(MyApp_Cmd
     ${APP_SOURCES}
     ${DATA_SOURCES}
     ${UTILS_SOURCES}
+    ${COMMON_SOURCES}
 )
 
 
