@@ -1,12 +1,12 @@
 #pragma once
 
 #include "View/IGuiView.h"
+#include <string> // 包含 a
 
 struct GLFWwindow;
 
 class ImGuiView : public IGuiView {
 public:
-    // ImGui的实现需要一个指向Application的引用来交互
     explicit ImGuiView(Application& app);
     ~ImGuiView() override = default;
 
@@ -15,8 +15,15 @@ public:
     void cleanup() override;
 
 private:
-    void render_frame(); // 负责渲染一帧的GUI
+    void render_frame();
+    void update_status_message(); // 新增：一个根据app状态更新消息的辅助函数
 
-    Application& app_; // 对应用逻辑层的引用
+    Application& app_;
     GLFWwindow* window_;
+
+    // 新增：UI层自己管理输入框的缓冲区和状态消息
+    char add_buffer_[128];
+    char query_buffer_[128];
+    char new_db_name_buffer_[128];
+    std::string status_message_;
 };

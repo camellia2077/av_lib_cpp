@@ -2,71 +2,55 @@
 #include "ImGuiView.h"
 #include "UIConfig.h"
 #include "imgui.h"
-#include "imgui_internal.h" // 需要包含 internal 头文件以使用设置处理器
+#include "imgui_internal.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <sstream> // for stringstream
 
-// --- 主题定义 ---
-enum Theme {
-    THEME_DARK,
-    THEME_LIGHT,
-    THEME_CLASSIC
-};
-
-// 全局静态变量，用于存储当前主题的选择，默认为暗色主题
+// --- 主题定义 (保持不变) ---
+enum Theme { THEME_DARK, THEME_LIGHT, THEME_CLASSIC };
 static int g_CurrentThemeIndex = THEME_CLASSIC;
-// THEME_DARK;
 
-// --- 主题应用函数 ---
 static void ApplyTheme(int themeIndex) {
     g_CurrentThemeIndex = themeIndex;
     switch (themeIndex) {
         case THEME_DARK:    ImGui::StyleColorsDark();     break;
         case THEME_LIGHT:   ImGui::StyleColorsLight();    break;
         case THEME_CLASSIC: ImGui::StyleColorsClassic();  break;
-        default:            ImGui::StyleColorsDark();     break;
     }
 }
 
-// --- 错误回调和圆角样式 ---
+// --- 其他辅助函数 (保持不变) ---
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "Glfw Error " << error << ": " << description << std::endl;
 }
 
 static void SetupRoundedStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding    = UIConfig::CornerRounding;
-    style.ChildRounding     = UIConfig::CornerRounding;
-    style.FrameRounding     = UIConfig::CornerRounding;
-    style.PopupRounding     = UIConfig::CornerRounding;
-    style.GrabRounding      = UIConfig::CornerRounding;
-    style.TabRounding       = UIConfig::CornerRounding;
+    style.WindowRounding = UIConfig::CornerRounding;
+    style.ChildRounding = UIConfig::CornerRounding;
+    style.FrameRounding = UIConfig::CornerRounding;
+    style.PopupRounding = UIConfig::CornerRounding;
+    style.GrabRounding = UIConfig::CornerRounding;
+    style.TabRounding = UIConfig::CornerRounding;
 }
 
+static void* ThemeSettings_ReadOpen(ImGuiContext* ctx, ImGuiSettingsHandler* handler, const char* name) { return &g_CurrentThemeIndex; }
+static void ThemeSettings_ReadLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* entry, const char* line) { int theme_index; if (sscanf(line, "Theme=%d", &theme_index) == 1) ApplyTheme(theme_index); }
+static void ThemeSettings_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf) { buf->appendf("[%s][State]\nTheme=%d\n\n", handler->TypeName, g_CurrentThemeIndex); }
 
-// --- 自定义设置处理器 (保持不变) ---
-static void* ThemeSettings_ReadOpen(ImGuiContext* ctx, ImGuiSettingsHandler* handler, const char* name) {
-    return &g_CurrentThemeIndex;
+// --- ImGuiView 实现 ---
+
+ImGuiView::ImGuiView(Application& app) 
+    : app_(app), window_(nullptr) 
+{
+    // 初始化缓冲区
+    add_buffer_[0] = '\0';
+    query_buffer_[0] = '\0';
+    new_db_name_buffer_[0] = '\0';
 }
-
-static void ThemeSettings_ReadLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* entry, const char* line) {
-    int theme_index;
-    if (sscanf(line, "Theme=%d", &theme_index) == 1) {
-        ApplyTheme(theme_index);
-    }
-}
-
-static void ThemeSettings_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf) {
-    buf->reserve(buf->size() + 50);
-    buf->appendf("[%s][State]\n", handler->TypeName);
-    buf->appendf("Theme=%d\n", g_CurrentThemeIndex);
-    buf->append("\n");
-}
-
-
-ImGuiView::ImGuiView(Application& app) : app_(app), window_(nullptr) {}
 
 bool ImGuiView::init() {
     glfwSetErrorCallback(glfw_error_callback);
@@ -107,11 +91,35 @@ bool ImGuiView::init() {
 
 void ImGuiView::run() {
     app_.load_database();
+    update_status_message(); // 初始化后更新一次状态
 
     while (!glfwWindowShouldClose(window_)) {
         glfwPollEvents();
         render_frame();
         glfwSwapBuffers(window_);
+    }
+}
+
+void ImGuiView::update_status_message() {
+    // 核心逻辑：将 AppStatus 翻译成 UI 文本
+    AppStatus status = app_.get_status();
+    const auto& result = app_.get_operation_result();
+
+    switch (status) {
+        case AppStatus::Idle:             status_message_ = UIConfig::Messages::Idle; break;
+        case AppStatus::Welcome:          status_message_ = UIConfig::Messages::Welcome; break;
+        case AppStatus::DBLoadSuccess:    status_message_ = UIConfig::Messages::DBLoadSuccess; break;
+        case AppStatus::DBSwitched:       status_message_ = UIConfig::Messages::dbSwitched(app_.get_current_db_name()); break;
+        case AppStatus::DBCreated:        status_message_ = UIConfig::Messages::dbCreated(app_.get_current_db_name()); break;
+        case AppStatus::AddCompleted:     status_message_ = UIConfig::Messages::addCompleted(result); break;
+        case AppStatus::QueryCompleted:   status_message_ = UIConfig::Messages::queryCompleted(result); break;
+        case AppStatus::ErrorDBNotExist:  status_message_ = UIConfig::Messages::ErrorDBNotExist; break;
+        case AppStatus::ErrorDBCreateFailed: status_message_ = UIConfig::Messages::ErrorDBCreateFailed; break;
+        case AppStatus::ErrorDBNameExists: status_message_ = UIConfig::Messages::ErrorDBNameExists; break;
+        case AppStatus::ErrorDBNameEmpty: status_message_ = UIConfig::Messages::ErrorDBNameEmpty; break;
+        case AppStatus::ErrorAddIDEmpty:  status_message_ = UIConfig::Messages::ErrorAddIDEmpty; break;
+        case AppStatus::ErrorQueryIDEmpty: status_message_ = UIConfig::Messages::ErrorQueryIDEmpty; break;
+        default: status_message_ = "未知状态。"; break;
     }
 }
 
@@ -124,92 +132,77 @@ void ImGuiView::render_frame() {
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     ImGui::Begin("主面板", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-    // --- 关键修改：将两个下拉菜单都放到顶部 ---
-
-    // 1. 数据库选择
+    // --- 数据库和主题选择 (与之前类似) ---
     ImGui::Text(UIConfig::CurrentDbLabel);
-    std::vector<std::string> db_names = app_.get_database_names();
     const std::string& current_db = app_.get_current_db_name();
     if (ImGui::BeginCombo("##db_combo", current_db.c_str())) {
-        for (const auto& db_name : db_names) {
-            const bool is_selected = (current_db == db_name);
-            if (ImGui::Selectable(db_name.c_str(), is_selected)) {
+        for (const auto& db_name : app_.get_database_names()) {
+            if (ImGui::Selectable(db_name.c_str(), current_db == db_name)) {
                 app_.set_current_database(db_name);
-            }
-            if (is_selected) {
-                ImGui::SetItemDefaultFocus();
+                update_status_message(); // 切换后更新消息
             }
         }
         ImGui::EndCombo();
     }
     
-    // 2. 主题选择
-    const char* themes[] = { "默认暗色 (Dark)", "明亮 (Light)", "经典复古 (Classic)" };
+    const char* themes[] = { "默认暗色", "明亮", "经典复古" };
     if (ImGui::Combo("主题选择", &g_CurrentThemeIndex, themes, IM_ARRAYSIZE(themes))) {
         ApplyTheme(g_CurrentThemeIndex);
-        SetupRoundedStyle(); // 切换主题后需要重新应用圆角
-        ImGui::MarkIniSettingsDirty(); // 标记以便保存
+        SetupRoundedStyle();
+        ImGui::MarkIniSettingsDirty();
     }
+    ImGui::Separator();
 
-    ImGui::Separator(); // 在顶部设置区下方加一个分隔线
-
-    // (其余的UI部分保持不变...)
+    // --- 内容存入区域 ---
     ImGui::Text(UIConfig::AddSectionHeader);
-    
-    char add_buf[128];
-    strncpy(add_buf, app_.get_add_buffer(), 128);
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
-    if (ImGui::InputText("##add_id", add_buf, IM_ARRAYSIZE(add_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        app_.set_add_buffer(add_buf);
-        app_.perform_add();
+    if (ImGui::InputText("##add_id", add_buffer_, sizeof(add_buffer_), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        app_.perform_add(add_buffer_);
+        update_status_message();
+        if(app_.get_status() == AppStatus::AddCompleted && app_.get_operation_result().success_count > 0) add_buffer_[0] = '\0';
     }
-    app_.set_add_buffer(add_buf);
-    
     ImGui::PopItemWidth();
     ImGui::SameLine();
     if (ImGui::Button(UIConfig::AddToCurrentDbButton)) {
-        app_.perform_add();
+        app_.perform_add(add_buffer_);
+        update_status_message();
+        if(app_.get_status() == AppStatus::AddCompleted && app_.get_operation_result().success_count > 0) add_buffer_[0] = '\0';
     }
     
     ImGui::Spacing();
-    
-    char new_db_buf[128];
-    strncpy(new_db_buf, app_.get_new_db_name_buffer(), 128);
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
-    ImGui::InputTextWithHint("##new_db_name", UIConfig::NewDbInputHint, new_db_buf, IM_ARRAYSIZE(new_db_buf));
-    app_.set_new_db_name_buffer(new_db_buf);
-    
+    ImGui::InputTextWithHint("##new_db_name", UIConfig::NewDbInputHint, new_db_name_buffer_, sizeof(new_db_name_buffer_));
     ImGui::PopItemWidth();
     ImGui::SameLine();
     if (ImGui::Button(UIConfig::CreateNewDbButton)) {
-        app_.perform_create_database();
+        app_.perform_create_database(new_db_name_buffer_);
+        update_status_message();
+        if(app_.get_status() == AppStatus::DBCreated) new_db_name_buffer_[0] = '\0';
     }
     
     ImGui::Separator();
     
+    // --- 内容查询区域 ---
     ImGui::Text(UIConfig::QuerySectionHeader, current_db.c_str());
-    char query_buf[128];
-    strncpy(query_buf, app_.get_query_buffer(), 128);
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
-    if (ImGui::InputText("##query_id", query_buf, IM_ARRAYSIZE(query_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        app_.set_query_buffer(query_buf);
-        app_.perform_query();
+    if (ImGui::InputText("##query_id", query_buffer_, sizeof(query_buffer_), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        app_.perform_query(query_buffer_);
+        update_status_message();
     }
-    app_.set_query_buffer(query_buf);
-    
     ImGui::PopItemWidth();
     ImGui::SameLine();
     if (ImGui::Button(UIConfig::QueryButton)) {
-        app_.perform_query();
+        app_.perform_query(query_buffer_);
+        update_status_message();
     }
     
     ImGui::Separator();
     
-    ImGui::Text(UIConfig::StatusLabel, app_.get_status_message().c_str());
+    // --- 状态栏 ---
+    ImGui::Text(UIConfig::StatusLabel, status_message_.c_str());
     ImGui::Text(UIConfig::TotalRecordsLabel, app_.get_total_records());
     ImGui::Separator();
-    ImGui::Text("Loaded Font: %s", UIConfig::FontPath);
-
+    ImGui::Text("字体: %s", UIConfig::FontPath);
 
     ImGui::End();
 
