@@ -2,6 +2,7 @@
 #include "Utils/Validator.h"
 #include <vector>
 #include <sstream>
+#include <filesystem> // 引入 <filesystem>
 
 // --- 新增辅助功能 ---
 namespace {
@@ -43,10 +44,13 @@ void Application::perform_create_database(const std::string& new_db_name) {
         return;
     }
     
-    std::string db_file_name = new_db_name;
-    if (db_file_name.rfind(".bin") == std::string::npos) {
-        db_file_name += ".bin";
+    // --- 修改点：使用 std::filesystem 来处理路径 ---
+    std::filesystem::path db_path(new_db_name);
+    if (!db_path.has_extension() || db_path.extension() != ".bin") {
+        db_path.replace_extension(".bin");
     }
+    std::string db_file_name = db_path.string();
+    // --- 修改结束 ---
 
     if (db_manager_->database_exists(db_file_name)) {
         status_ = AppStatus::ErrorDBNameExists;

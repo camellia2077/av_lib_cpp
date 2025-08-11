@@ -1,6 +1,5 @@
-
 #include "DatabaseManager.h"
-#include <filesystem>
+#include <filesystem> // 引入 <filesystem>
 
 DatabaseManager::DatabaseManager() {
     // 默认数据库名称
@@ -14,11 +13,13 @@ void DatabaseManager::load_default_database() {
 }
 
 bool DatabaseManager::create_database(const std::string& db_name_raw) {
-    std::string new_db_name = db_name_raw;
-    // 确保文件名以 .bin 结尾
-    if (new_db_name.rfind(".bin") == std::string::npos) {
-        new_db_name += ".bin";
+    // --- 修改点：使用 std::filesystem 来处理路径 ---
+    std::filesystem::path db_path(db_name_raw);
+    if (!db_path.has_extension() || db_path.extension() != ".bin") {
+        db_path.replace_extension(".bin");
     }
+    std::string new_db_name = db_path.string();
+    // --- 修改结束 ---
 
     if (dbs_.count(new_db_name)) {
         return false; // 数据库已存在
