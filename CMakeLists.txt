@@ -31,7 +31,12 @@ find_package(OpenGL REQUIRED)
 
 # --- 自动发现源文件 (无需改动) ---
 file(GLOB APP_SOURCES "src/App/*.cpp")
-file(GLOB DATA_SOURCES "src/Data/*.cpp")
+file(GLOB DATA_SOURCES 
+    "src/Data/*.cpp"
+    "src/Data/repository/*.cpp"
+    "src/Data/storage/*.cpp"
+    
+)
 file(GLOB VIEW_SOURCES "src/View/ImGui/*.cpp")
 file(GLOB UTILS_SOURCES "src/Utils/*.cpp")
 file(GLOB COMMON_SOURCES "src/common/*.cpp") 

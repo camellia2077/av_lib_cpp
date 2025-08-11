@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IDRepository.h" // 包含新的数据核心类
+#include "Data/repository/IDRepository.h" // 包含新的数据核心类
 #include <string>
 #include <memory>
 
