@@ -1,7 +1,9 @@
 #pragma once
 
+#include "App/Application.h" // 包含此文件以使用 OperationResult
 #include <string_view>
-#include <string> // 使用std::string来处理需要拼接的文本
+#include <string> 
+// 这个文件现在包含了所有的状态消息文本。MessageFormatter 将从这里读取消息。
 
 // 使用命名空间来组织所有UI相关的配置
 namespace UIConfig {
@@ -28,15 +30,19 @@ namespace UIConfig {
     constexpr const char* StatusLabel = "状态: %s";
     constexpr const char* TotalRecordsLabel = "当前库记录总数: %zu";
 
-    // --- 新增：状态消息文本，对应 AppStatus 枚举 ---
+    // --- 新增：统一管理所有状态消息文本 ---
     namespace Messages {
+        // --- 通用状态 ---
         constexpr std::string_view Idle = "准备就绪。";
-        constexpr std::string_view Welcome = "欢迎使用！请选择操作。";
+        constexpr std::string_view Welcome = "欢迎使用！";
         constexpr std::string_view DBLoadSuccess = "默认数据库加载成功。";
+        constexpr std::string_view UnknownError = "未知状态。";
+
+        // --- 动态生成的消息 ---
         inline std::string dbSwitched(const std::string& db_name) { return "已切换到数据库: " + db_name; }
         inline std::string dbCreated(const std::string& db_name) { return "成功创建并切换到数据库: " + db_name; }
         
-        // 批量操作结果格式化
+        // --- 批量操作结果格式化 ---
         inline std::string addCompleted(const OperationResult& result) {
             std::string msg = "在 [" + result.target_db_name + "] 中添加完成。 ";
             msg += "成功: " + std::to_string(result.success_count) + "个。 ";
@@ -53,7 +59,7 @@ namespace UIConfig {
             return msg;
         }
 
-        // 错误信息
+        // --- 错误信息 ---
         constexpr std::string_view ErrorDBNotExist = "错误：目标数据库不存在。";
         constexpr std::string_view ErrorDBCreateFailed = "错误：创建数据库文件失败。";
         constexpr std::string_view ErrorDBNameExists = "错误：该名称的数据库已经存在。";
