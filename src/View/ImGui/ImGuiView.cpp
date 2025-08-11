@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "ImGuiView.h"
 #include "UIConfig.h"
 #include "imgui.h"

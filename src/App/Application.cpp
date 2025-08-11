@@ -1,3 +1,4 @@
+
 #include "Application.h"
 #include "Utils/Validator.h"
 #include <vector>
@@ -21,7 +22,13 @@ void Application::perform_create_database(const std::string& new_db_name) {
         return;
     }
     
-    if (db_manager_->database_exists(new_db_name + ".bin")) {
+    // 检查时应附加.bin后缀
+    std::string db_file_name = new_db_name;
+    if (db_file_name.rfind(".bin") == std::string::npos) {
+        db_file_name += ".bin";
+    }
+
+    if (db_manager_->database_exists(db_file_name)) {
         status_ = AppStatus::ErrorDBNameExists;
         return;
     }
@@ -33,6 +40,7 @@ void Application::perform_create_database(const std::string& new_db_name) {
     }
 }
 
+// --- 主要修改区域 ---
 void Application::perform_add(const std::string& input) {
     FastQueryDB* current_db = db_manager_->get_current_db();
     if (!current_db) {
@@ -45,24 +53,23 @@ void Application::perform_add(const std::string& input) {
         return;
     }
 
-    std::stringstream ss(input);
-    std::string id;
-    last_op_result_ = {}; // 重置结果
+    // 重置操作结果
+    last_op_result_ = {}; 
     last_op_result_.target_db_name = db_manager_->get_current_db_name();
 
-    while (ss >> id) {
-        if (!Validator::isValidIDFormat(id)) {
-            last_op_result_.invalid_format_count++;
-        } else if (current_db->add(id)) {
-            last_op_result_.success_count++;
-        } else {
-            last_op_result_.exist_count++;
-        }
+    // 将整个输入视为一个ID进行处理，不再按空格分割
+    if (!Validator::isValidIDFormat(input)) {
+        last_op_result_.invalid_format_count = 1;
+    } else if (current_db->add(input)) {
+        last_op_result_.success_count = 1;
+    } else {
+        last_op_result_.exist_count = 1;
     }
 
     status_ = AppStatus::AddCompleted;
 }
 
+// --- 主要修改区域 ---
 void Application::perform_query(const std::string& input) {
     FastQueryDB* current_db = db_manager_->get_current_db();
     if (!current_db) {
@@ -74,24 +81,23 @@ void Application::perform_query(const std::string& input) {
         status_ = AppStatus::ErrorQueryIDEmpty;
         return;
     }
-
-    std::stringstream ss(input);
-    std::string id;
-    last_op_result_ = {}; // 重置结果
+    
+    // 重置操作结果
+    last_op_result_ = {};
     last_op_result_.target_db_name = db_manager_->get_current_db_name();
 
-    while (ss >> id) {
-        if (!Validator::isValidIDFormat(id)) {
-            last_op_result_.invalid_format_count++;
-        } else if (current_db->exists(id)) {
-            last_op_result_.success_count++;
-        } else {
-            last_op_result_.not_found_count++;
-        }
+    // 将整个输入视为一个ID进行处理
+    if (!Validator::isValidIDFormat(input)) {
+        last_op_result_.invalid_format_count = 1;
+    } else if (current_db->exists(input)) {
+        last_op_result_.success_count = 1;
+    } else {
+        last_op_result_.not_found_count = 1;
     }
     
     status_ = AppStatus::QueryCompleted;
 }
+// --- 修改结束 ---
 
 void Application::set_current_database(const std::string& db_name) {
     if (db_manager_->switch_to_database(db_name)) {
@@ -100,8 +106,6 @@ void Application::set_current_database(const std::string& db_name) {
         status_ = AppStatus::ErrorDBNotExist;
     }
 }
-
-// --- 数据获取方法现在全部委托给 db_manager_ ---
 
 std::vector<std::string> Application::get_database_names() const {
     return db_manager_->get_all_db_names();
@@ -115,8 +119,6 @@ size_t Application::get_total_records() const {
     FastQueryDB* current_db = db_manager_->get_current_db();
     return current_db ? current_db->get_count() : 0;
 }
-
-// --- 状态获取方法保持不变 ---
 
 AppStatus Application::get_status() const {
     return status_;
