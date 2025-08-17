@@ -1,6 +1,4 @@
-# 忽略所有在 lib 文件夹中的内容
-# 这能阻止我们上传第三方库的源代码，比如 ImGui
-/lib/
+
 
 assitance_tools/
 

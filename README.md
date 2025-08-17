@@ -34,3 +34,15 @@
         ├── ImGuiView.h
         └── UIConfig.h
 ```
+
+## 第三方库 (Third-Party Libraries)
+
+本项目使用了以下第三方库：
+
+### [Dear ImGui](https://github.com/ocornut/imgui)
+
+- **简介**: 一个无膨胀、快速、可移植的 C++ 图形用户界面库。
+- **版权**: Copyright (c) 2014-2024 Omar Cornut
+- **许可证**: [MIT License](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)
+
+感谢其为本项目提供了强大的图形界面支持。
