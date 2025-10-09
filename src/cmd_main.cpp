@@ -1,23 +1,28 @@
-
 #include "App/Application.h"
 #include <iostream>
 #include <limits>
 #include <vector>
 #include <string>
 #include "common/MessageFormatter.h"
+#include <cstdlib>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-/// --- 修改：命令行版本的状态消息处理函数 ---
+void clear_screen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
 void print_status_message(Application& app) {
-    // 直接调用 MessageFormatter 来获取格式化后的消息
     std::string msg = MessageFormatter::format_message(app);
     std::cout << "结果: " << msg << std::endl;
 }
 
-// 菜单函数保持不变
 void print_menu(const std::string& current_db) {
     std::cout << "\n--- 命令行查询工具 ---" << std::endl;
     std::cout << "当前数据库: [" << current_db << "]" << std::endl;
@@ -25,7 +30,8 @@ void print_menu(const std::string& current_db) {
     std::cout << "2. 查询内容 (可批量, 用空格隔开)" << std::endl;
     std::cout << "3. 创建新数据库" << std::endl;
     std::cout << "4. 切换数据库" << std::endl;
-    std::cout << "5. 查看当前库状态" << std::endl;
+    std::cout << "5. 从 .txt 文件批量导入" << std::endl;
+    std::cout << "6. 查看当前库状态" << std::endl;
     std::cout << "0. 退出" << std::endl;
     std::cout << "请输入选项: ";
 }
@@ -41,46 +47,52 @@ int main() {
     
     Application app;
     app.load_database();
-    print_status_message(app); // 初始加载后显示状态
 
     int choice;
     std::string input_buffer;
 
     while (true) {
+        // --- [核心修改] ---
+        // 1. 清空屏幕
+        clear_screen();
+        // 2. 打印上一次操作的状态/结果
+        print_status_message(app);
+        // 3. 打印新菜单
         print_menu(app.get_current_db_name());
+        
         std::cin >> choice;
 
         if (std::cin.fail()) {
+            // 对于无效输入，我们立即刷新并显示错误
+            clear_screen();
             std::cout << "错误: 无效输入，请输入数字。" << std::endl;
             std::cin.clear();
             clear_cin();
+            // 在下一次循环开始时，会重新显示菜单
             continue;
         }
         clear_cin(); 
-
+        
         switch (choice) {
-            case 1: // 添加
+            case 1:
                 std::cout << "输入要添加的内容: ";
                 std::getline(std::cin, input_buffer);
                 app.perform_add(input_buffer);
-                print_status_message(app);
                 break;
 
-            case 2: // 查询
+            case 2:
                 std::cout << "输入要查询的内容: ";
                 std::getline(std::cin, input_buffer);
                 app.perform_query(input_buffer);
-                print_status_message(app);
                 break;
 
-            case 3: // 创建数据库
+            case 3:
                 std::cout << "输入新数据库名称: ";
                 std::getline(std::cin, input_buffer);
                 app.perform_create_database(input_buffer);
-                print_status_message(app);
                 break;
 
-            case 4: // 切换数据库
+            case 4:
             {
                 std::vector<std::string> dbs = app.get_database_names();
                 if (dbs.empty()) {
@@ -94,28 +106,38 @@ int main() {
                 std::cout << "选择要切换的数据库编号: ";
                 int db_choice;
                 std::cin >> db_choice;
-                 if (std::cin.fail() || db_choice < 1 || db_choice > dbs.size()) {
-                    std::cout << "错误: 无效选择。" << std::endl;
+                 if (std::cin.fail() || db_choice < 1 || db_choice > static_cast<int>(dbs.size())) {
+                    app.set_status(AppStatus::ErrorIdInvalid); // 设置一个通用错误状态
                     std::cin.clear();
                     clear_cin();
                     break;
                 }
                 clear_cin();
                 app.set_current_database(dbs[db_choice - 1]);
-                print_status_message(app);
                 break;
             }
 
-            case 5: // 查看状态
-                std::cout << "当前库记录总数: " << app.get_total_records() << std::endl;
+            case 5:
+                std::cout << "输入 .txt 文件路径: ";
+                std::getline(std::cin, input_buffer);
+                app.perform_import_from_file(input_buffer);
                 break;
 
-            case 0: // 退出
+            case 6:
+                // 对于这种只显示信息的操作，我们直接输出
+                clear_screen();
+                std::cout << "当前库记录总数: " << app.get_total_records() << std::endl;
+                std::cout << "\n按回车键返回菜单...";
+                std::cin.get(); // 等待用户按键
+                break;
+
+            case 0:
+                clear_screen();
                 std::cout << "程序退出。" << std::endl;
                 return 0;
 
             default:
-                std::cout << "无效选项，请重试。" << std::endl;
+                app.set_status(AppStatus::ErrorIdInvalid); // 设置一个通用错误状态
                 break;
         }
     }

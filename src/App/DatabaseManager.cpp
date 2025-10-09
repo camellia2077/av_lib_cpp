@@ -1,40 +1,39 @@
 #include "DatabaseManager.h"
-#include <filesystem> // 引入 <filesystem>
-#include <string>     // 确保包含 <string>
+#include <filesystem>
+#include <string>
 
 DatabaseManager::DatabaseManager() {
-    // 默认数据库名称
-    current_db_name_ = "database.bin";
+    // 默认数据库名称更改为 .sqlite3
+    current_db_name_ = "database.sqlite3";
 }
 
 void DatabaseManager::load_default_database() {
-    // 加载默认数据库
     dbs_[current_db_name_] = std::make_unique<FastQueryDB>(current_db_name_);
-    dbs_[current_db_name_]->load();
 }
 
 bool DatabaseManager::create_database(const std::string& db_name_raw) {
     std::string new_db_name = db_name_raw;
 
-    // --- 修改点：使用 C++23 的 std::string::contains ---
-    // 如果原始名称不包含 ".bin"，则给它添加一个
-    if (!db_name_raw.contains(".bin")) {
-        new_db_name += ".bin";
+    // 确保文件名以 .sqlite3 结尾
+    if (new_db_name.find(".sqlite3") == std::string::npos) {
+        new_db_name += ".sqlite3";
     }
-    // --- 修改结束 ---
 
     if (dbs_.count(new_db_name)) {
         return false; // 数据库已存在
     }
 
-    auto db = std::make_unique<FastQueryDB>(new_db_name);
-    if (db->save()) { // 调用save()来创建物理文件
+    try {
+        // 构造 FastQueryDB 会自动创建文件
+        auto db = std::make_unique<FastQueryDB>(new_db_name);
         dbs_[new_db_name] = std::move(db);
-        current_db_name_ = new_db_name; // 创建成功后自动切换
+        current_db_name_ = new_db_name;
         return true;
+    } catch (const std::exception& e) {
+        // 如果创建失败 (例如，没有写权限)，则捕获异常
+        std::cerr << "创建数据库失败: " << e.what() << std::endl;
+        return false;
     }
-    
-    return false; // 创建失败
 }
 
 bool DatabaseManager::switch_to_database(const std::string& db_name) {
@@ -42,12 +41,26 @@ bool DatabaseManager::switch_to_database(const std::string& db_name) {
         current_db_name_ = db_name;
         return true;
     }
+    // 如果数据库不在内存中，但文件存在，则加载它
+    if (std::filesystem::exists(db_name)) {
+        try {
+            dbs_[db_name] = std::make_unique<FastQueryDB>(db_name);
+            current_db_name_ = db_name;
+            return true;
+        } catch (const std::exception& e) {
+            std::cerr << "切换并加载数据库失败: " << e.what() << std::endl;
+            return false;
+        }
+    }
     return false;
 }
 
 bool DatabaseManager::database_exists(const std::string& db_name) const {
-    // C++20 之后，map::count 在性能上和 map::contains 几乎一样
-    return dbs_.count(db_name) > 0;
+    if (dbs_.count(db_name) > 0) {
+        return true;
+    }
+    // 同时检查文件系统
+    return std::filesystem::exists(db_name);
 }
 
 FastQueryDB* DatabaseManager::get_current_db() const {
@@ -63,8 +76,15 @@ const std::string& DatabaseManager::get_current_db_name() const {
 
 std::vector<std::string> DatabaseManager::get_all_db_names() const {
     std::vector<std::string> names;
-    for(const auto& pair : dbs_) {
-        names.push_back(pair.first);
+    // 除了内存中的，也扫描当前目录下的 .sqlite3 文件
+    std::filesystem::path current_path(".");
+    for (const auto& entry : std::filesystem::directory_iterator(current_path)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".sqlite3") {
+            names.push_back(entry.path().filename().string());
+        }
     }
+    // 去重
+    std::sort(names.begin(), names.end());
+    names.erase(std::unique(names.begin(), names.end()), names.end());
     return names;
 }

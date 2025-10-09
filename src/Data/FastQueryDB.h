@@ -1,22 +1,32 @@
 #pragma once
 
-#include "Data/repository/IDRepository.h" // 包含新的数据核心类
 #include <string>
 #include <memory>
+#include "sqlite3.h"
 
 class FastQueryDB {
 public:
     explicit FastQueryDB(std::string filepath);
+    ~FastQueryDB();
 
-    // 公共接口保持不变
-    void load();
-    bool save();
+    FastQueryDB(const FastQueryDB&) = delete;
+    FastQueryDB& operator=(const FastQueryDB&) = delete;
+
     bool add(const std::string& id);
     bool exists(const std::string& id) const;
     size_t get_count() const;
 
+    // --- Add these new methods for transaction control ---
+    void begin_transaction();
+    void commit_transaction();
+    void rollback_transaction();
+
 private:
+    void initialize_db();
+
     std::string db_filepath_;
-    // 关键修改：不再直接持有数据和锁，而是持有一个Repository实例
-    std::unique_ptr<IDRepository> repository_;
+    sqlite3* db_ = nullptr;
+    sqlite3_stmt* add_stmt_ = nullptr;
+    sqlite3_stmt* exists_stmt_ = nullptr;
+    sqlite3_stmt* count_stmt_ = nullptr;
 };

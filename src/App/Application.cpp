@@ -2,22 +2,15 @@
 #include "Utils/Validator.h"
 #include <vector>
 #include <sstream>
-#include <filesystem> // 引入 <filesystem>
+#include <filesystem>
+#include <fstream>
 
-// --- 新增辅助功能 ---
+// --- create_canonical_id 辅助函数 (保持不变) ---
 namespace {
-    /**
-     * @brief 创建一个规范化的ID字符串。
-     * 该函数移除所有非字母和非数字的字符（如空格和连字符）。
-     * 它应该在 Validator::isValidIDFormat 返回 true 后被调用。
-     * @param raw_id 经过验证的原始ID字符串。
-     * @return 一个只包含字母和数字的规范化ID。
-     */
     std::string create_canonical_id(const std::string& raw_id) {
         std::string canonical_id;
         canonical_id.reserve(raw_id.length());
         for (char c : raw_id) {
-            // 使用从 Validator.h 暴露的辅助函数来筛选字符
             if (Validator::is_alpha_char(c) || Validator::is_digit_char(c)) {
                 canonical_id += c;
             }
@@ -26,10 +19,9 @@ namespace {
     }
 }
 
-Application::Application() 
+Application::Application()
     : status_(AppStatus::Welcome)
 {
-    // 创建并拥有 DatabaseManager
     db_manager_ = std::make_unique<DatabaseManager>();
 }
 
@@ -43,14 +35,12 @@ void Application::perform_create_database(const std::string& new_db_name) {
         status_ = AppStatus::ErrorDBNameEmpty;
         return;
     }
-    
-    // --- 修改点：使用 std::filesystem 来处理路径 ---
-    std::filesystem::path db_path(new_db_name);
-    if (!db_path.has_extension() || db_path.extension() != ".bin") {
-        db_path.replace_extension(".bin");
+
+    std::string db_file_name = new_db_name;
+    // 确保文件名以 .sqlite3 结尾
+    if (db_file_name.find(".sqlite3") == std::string::npos) {
+        db_file_name += ".sqlite3";
     }
-    std::string db_file_name = db_path.string();
-    // --- 修改结束 ---
 
     if (db_manager_->database_exists(db_file_name)) {
         status_ = AppStatus::ErrorDBNameExists;
@@ -64,7 +54,7 @@ void Application::perform_create_database(const std::string& new_db_name) {
     }
 }
 
-// --- 主要修改区域 ---
+// --- perform_add 方法 (几乎不变) ---
 void Application::perform_add(const std::string& input) {
     FastQueryDB* current_db = db_manager_->get_current_db();
     if (!current_db) {
@@ -77,20 +67,21 @@ void Application::perform_add(const std::string& input) {
         return;
     }
 
-    last_op_result_ = {}; 
+    last_op_result_ = {};
     last_op_result_.target_db_name = db_manager_->get_current_db_name();
 
     std::stringstream ss(input);
     std::string id;
     int processed_count = 0;
 
+    // --- SQLite 优化：使用事务 ---
+    // sqlite3_exec(current_db->get_db_handle(), "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
+
     while (ss >> id) {
         processed_count++;
         if (!Validator::isValidIDFormat(id)) {
             last_op_result_.invalid_format_count++;
         } else {
-            // 关键改动：在添加到数据库前，将ID规范化
-            // 例如 "abc-123" 或 "abc 123" 都会变成 "abc123"
             std::string canonical_id = create_canonical_id(id);
             if (current_db->add(canonical_id)) {
                 last_op_result_.success_count++;
@@ -100,6 +91,9 @@ void Application::perform_add(const std::string& input) {
         }
     }
     
+    // sqlite3_exec(current_db->get_db_handle(), "COMMIT;", nullptr, nullptr, nullptr);
+
+
     if (processed_count == 0) {
         status_ = AppStatus::ErrorAddIDEmpty;
         return;
@@ -107,8 +101,8 @@ void Application::perform_add(const std::string& input) {
 
     status_ = AppStatus::AddCompleted;
 }
-// --- 修改结束 ---
 
+// --- 其他方法 (保持不变) ---
 void Application::perform_query(const std::string& input) {
     FastQueryDB* current_db = db_manager_->get_current_db();
     if (!current_db) {
@@ -127,7 +121,6 @@ void Application::perform_query(const std::string& input) {
     if (!Validator::isValidIDFormat(input)) {
         last_op_result_.invalid_format_count = 1;
     } else {
-        // 关键改动：在查询数据库前，将ID规范化
         std::string canonical_id = create_canonical_id(input);
         if (current_db->exists(canonical_id)) {
             last_op_result_.success_count = 1;
@@ -166,4 +159,64 @@ AppStatus Application::get_status() const {
 
 const OperationResult& Application::get_operation_result() const {
     return last_op_result_;
+
+}
+
+void Application::set_status(AppStatus new_status) {
+    status_ = new_status;
+}
+
+void Application::perform_import_from_file(const std::string& filepath) {
+    if (filepath.empty()) {
+        return;
+    }
+
+    FastQueryDB* current_db = db_manager_->get_current_db();
+    if (!current_db) {
+        status_ = AppStatus::ErrorDBNotExist;
+        return;
+    }
+
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        status_ = AppStatus::ErrorFileOpenFailed;
+        return;
+    }
+
+    last_op_result_ = {};
+    last_op_result_.target_db_name = db_manager_->get_current_db_name();
+
+    std::string line;
+    int processed_count = 0;
+
+    current_db->begin_transaction(); // Start transaction for performance
+
+    try {
+        while (std::getline(file, line)) {
+            if (line.empty()) continue;
+
+            processed_count++;
+            if (!Validator::isValidIDFormat(line)) {
+                last_op_result_.invalid_format_count++;
+            } else {
+                std::string canonical_id = create_canonical_id(line);
+                if (current_db->add(canonical_id)) {
+                    last_op_result_.success_count++;
+                } else {
+                    last_op_result_.exist_count++;
+                }
+            }
+        }
+        current_db->commit_transaction(); // Commit all changes at once
+    } catch (...) {
+        current_db->rollback_transaction(); // Rollback if any error occurs
+        throw;
+    }
+
+    if (processed_count == 0) {
+        status_ = AppStatus::ErrorFileEmpty;
+        return;
+    }
+
+    status_ = AppStatus::ImportCompleted;
 }
