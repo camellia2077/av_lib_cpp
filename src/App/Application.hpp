@@ -1,11 +1,12 @@
-#pragma once
+// App/Application.hpp
+#ifndef APPLICATION_HPP
+#define APPLICATION_HPP
 
-#include "DatabaseManager.h"
+#include "DatabaseManager.hpp"
 #include <string>
 #include <memory>
 #include <vector>
 
-// (enum AppStatus remains the same)
 enum class AppStatus {
     Idle,
     Welcome,
@@ -51,7 +52,7 @@ public:
     // --- Status Getters and Setters ---
     AppStatus get_status() const;
     const OperationResult& get_operation_result() const;
-    void set_status(AppStatus new_status); // --- [ADD THIS LINE] ---
+    void set_status(AppStatus new_status);
     
     // --- Data Getters ---
     size_t get_total_records() const;
@@ -63,3 +64,4 @@ private:
     AppStatus status_; 
     OperationResult last_op_result_;
 };
+#endif

@@ -1,7 +1,9 @@
-#pragma once
+// View/ImGui/ImGuiView.hpp
+#ifndef IMGUIVIEW_HPP
+#define IMGUIVIEW_HPP
 
-#include "View/IGuiView.h"
-#include <string> // 包含 a
+#include "View/IGuiView.hpp"
+#include <string>
 
 struct GLFWwindow;
 
@@ -21,9 +23,10 @@ private:
     Application& app_;
     GLFWwindow* window_;
 
-    // 新增：UI层自己管理输入框的缓冲区和状态消息
+    // UI层自己管理输入框的缓冲区和状态消息
     char add_buffer_[128];
     char query_buffer_[128];
     char new_db_name_buffer_[128];
     std::string status_message_;
 };
+#endif

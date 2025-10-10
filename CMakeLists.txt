@@ -77,7 +77,7 @@ target_compile_options(${GUI_EXECUTABLE_NAME} PRIVATE
     -march=native
 )
 target_precompile_headers(${GUI_EXECUTABLE_NAME} PRIVATE
-    "src/common/pch.h"
+    "src/common/pch.hpp"
 )
 target_link_libraries(${GUI_EXECUTABLE_NAME} PRIVATE
     imgui
@@ -98,7 +98,7 @@ target_compile_options(${CMD_EXECUTABLE_NAME} PRIVATE
 )
 target_link_options(${CMD_EXECUTABLE_NAME} PRIVATE "-s")
 target_precompile_headers(${CMD_EXECUTABLE_NAME} PRIVATE
-    "src/common/cmd_pch.h"
+    "src/common/cmd_pch.hpp"
 )
 target_link_libraries(${CMD_EXECUTABLE_NAME} PRIVATE
     SQLite::SQLite3

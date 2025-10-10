@@ -1,6 +1,8 @@
-#pragma once
+// View/ImGui/UIConfig.hpp
+#ifndef UICONFIG_HPP
+#define UICONFIG_HPP
 
-#include "App/Application.h" // 包含此文件以使用 OperationResult
+#include "App/Application.hpp" // 包含此文件以使用 OperationResult
 #include <string_view>
 #include <string> 
 // 这个文件现在包含了所有的状态消息文本。MessageFormatter 将从这里读取消息。
@@ -66,5 +68,17 @@ namespace UIConfig {
         constexpr std::string_view ErrorDBNameEmpty = "错误：新数据库名称不能为空。";
         constexpr std::string_view ErrorAddIDEmpty = "错误：不能添加空的内容。";
         constexpr std::string_view ErrorQueryIDEmpty = "提示：请输入要查询的内容。";
+        constexpr std::string_view ErrorIdInvalid = "错误：无效的选项或格式。"; // --- [ADD THIS LINE] ---
+
+        inline std::string importCompleted(const OperationResult& result) {
+            std::string msg = "从文件导入到 [" + result.target_db_name + "] 完成。 ";
+            msg += "成功: " + std::to_string(result.success_count) + "。 ";
+            if (result.exist_count > 0) msg += "已存在: " + std::to_string(result.exist_count) + "。 ";
+            if (result.invalid_format_count > 0) msg += "格式错误: " + std::to_string(result.invalid_format_count) + "。";
+            return msg;
+        }
+        constexpr std::string_view ErrorFileOpenFailed = "错误：无法打开指定的文件。";
+        constexpr std::string_view ErrorFileEmpty = "提示：文件为空或只包含空行。";
     }
 }
+#endif

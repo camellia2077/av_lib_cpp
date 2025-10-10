@@ -1,4 +1,6 @@
-#pragma once
+// Data/FastQueryDB.hpp
+#ifndef FASTQUERYDB_HPP
+#define FASTQUERYDB_HPP
 
 #include <string>
 #include <memory>
@@ -30,3 +32,4 @@ private:
     sqlite3_stmt* exists_stmt_ = nullptr;
     sqlite3_stmt* count_stmt_ = nullptr;
 };
+#endif

@@ -1,6 +1,8 @@
-#pragma once
+// View/IGuiView.hpp
+#ifndef IGUIVIEW_HPP
+#define IGUIVIEW_HPP
 
-#include "App/Application.h"
+#include "App/Application.hpp"
 #include <memory>
 
 // 任何GUI实现都必须遵循这个接口
@@ -15,3 +17,4 @@ public:
     // 清理资源
     virtual void cleanup() = 0;
 };
+#endif

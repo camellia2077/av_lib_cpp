@@ -1,9 +1,10 @@
-#include "App/Application.h"
+// cmd_main.cpp
+#include "App/Application.hpp"
 #include <iostream>
 #include <limits>
 #include <vector>
 #include <string>
-#include "common/MessageFormatter.h"
+#include "common/MessageFormatter.hpp"
 #include <cstdlib>
 
 #ifdef _WIN32

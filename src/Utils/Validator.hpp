@@ -1,4 +1,6 @@
-#pragma once
+// Utils/Validator.hpp
+#ifndef VALIDATOR_HPP
+#define VALIDATOR_HPP
 
 #include <string>
 
@@ -26,3 +28,4 @@ namespace Validator {
         return c == ' ' || c == '\t';
     }
 }
+#endif

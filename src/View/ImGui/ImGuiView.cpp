@@ -1,6 +1,7 @@
+// View/ImGui/ImGuiView.cpp
 
-#include "ImGuiView.h"
-#include "UIConfig.h"
+#include "ImGuiView.hpp"
+#include "UIConfig.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_impl_glfw.h"
@@ -8,7 +9,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <sstream> // for stringstream
-#include "common/MessageFormatter.h"
+#include "common/MessageFormatter.hpp"
 
 // --- 主题定义 (保持不变) ---
 enum Theme { THEME_DARK, THEME_LIGHT, THEME_CLASSIC };

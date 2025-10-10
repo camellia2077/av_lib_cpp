@@ -1,7 +1,8 @@
-#include "Validator.h"
+// Utils/Validator.cpp
+#include "Validator.hpp"
 #include <string>
 
-// 字符类型判断函数已移至 Validator.h
+// 字符类型判断函数已移至 Validator.hpp
 
 bool Validator::isValidIDFormat(const std::string& id) {
     std::string alpha_part;

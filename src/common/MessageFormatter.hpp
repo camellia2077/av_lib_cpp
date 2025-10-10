@@ -1,6 +1,8 @@
-#pragma once
+// common/MessageFormatter.hpp
+#ifndef MESSAGEFORMATTER_HPP
+#define MESSAGEFORMATTER_HPP
 
-#include "App/Application.h" // For AppStatus and OperationResult
+#include "App/Application.hpp"
 #include <string>
 
 namespace MessageFormatter {
@@ -15,3 +17,4 @@ namespace MessageFormatter {
 std::string format_message(const Application& app);
 
 } // namespace MessageFormatter
+#endif

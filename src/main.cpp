@@ -1,6 +1,7 @@
+// main.cpp
 
-#include "App/Application.h"
-#include "View/ImGui/ImGuiView.h"
+#include "App/Application.hpp"
+#include "View/ImGui/ImGuiView.hpp"
 #include <memory>
 
 int main(int, char**) {

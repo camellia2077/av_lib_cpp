@@ -3,12 +3,12 @@
 
 *.c text
 *.cpp text
-*.h text
+*.hpp text
 *.m text
 *.mm text
 *.md text
 *.txt text
-*.html text
+*.hpptml text
 *.bat text
 *.frag text
 *.vert text
@@ -33,13 +33,13 @@ Makefile text eol=lf
 # 新增内容 - 告诉 GitHub 不要统计 ImGui 库的代码
 # ======================================================
 imgui.cpp linguist-vendored
-imgui.h linguist-vendored
+imgui.hpp linguist-vendored
 imgui_demo.cpp linguist-vendored
 imgui_draw.cpp linguist-vendored
-imgui_internal.h linguist-vendored
+imgui_internal.hpp linguist-vendored
 imgui_tables.cpp linguist-vendored
 imgui_widgets.cpp linguist-vendored
 imconfig.h linguist-vendored
-imstb_rectpack.h linguist-vendored
-imstb_textedit.h linguist-vendored
-imstb_truetype.h linguist-vendored
+imstb_rectpack.hpp linguist-vendored
+imstb_textedit.hpp linguist-vendored
+imstb_truetype.hpp linguist-vendored

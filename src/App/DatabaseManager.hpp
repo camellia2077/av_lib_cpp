@@ -1,6 +1,8 @@
-#pragma once
+// App/DatabaseManager.hpp
+#ifndef DATABASEMANAGER_HPP
+#define DATABASEMANAGER_HPP
 
-#include "Data/FastQueryDB.h"
+#include "Data/FastQueryDB.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -25,3 +27,4 @@ private:
     std::map<std::string, std::unique_ptr<FastQueryDB>> dbs_;
     std::string current_db_name_;
 };
+#endif
