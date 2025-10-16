@@ -1,6 +1,6 @@
 // Data/FastQueryDB.hpp
-#ifndef FASTQUERYDB_HPP
-#define FASTQUERYDB_HPP
+#ifndef FAST_QUERY_D_B_HPP
+#define FAST_QUERY_D_B_HPP
 
 #include <string>
 #include <memory>

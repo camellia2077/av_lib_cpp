@@ -1,6 +1,6 @@
 // common/MessageFormatter.hpp
-#ifndef MESSAGEFORMATTER_HPP
-#define MESSAGEFORMATTER_HPP
+#ifndef MESSAGE_FORMATTER_HPP
+#define MESSAGE_FORMATTER_HPP
 
 #include "App/Application.hpp"
 #include <string>

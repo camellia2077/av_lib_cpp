@@ -1,10 +1,13 @@
 // App/Application.cpp
 #include "Application.hpp"
+#include "IO/TextFileReader.hpp"
 #include "Utils/Validator.hpp"
 #include <vector>
 #include <sstream>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+// --- [修正] 移除 <chrono>，因为我们不再使用时间戳 ---
 
 // --- create_canonical_id 辅助函数 (保持不变) ---
 namespace {
@@ -26,6 +29,7 @@ Application::Application()
     db_manager_ = std::make_unique<DatabaseManager>();
 }
 
+// ... load_database, perform_create_database 等函数保持不变 ...
 void Application::load_database() {
     db_manager_->load_default_database();
     status_ = AppStatus::DBLoadSuccess;
@@ -38,7 +42,6 @@ void Application::perform_create_database(const std::string& new_db_name) {
     }
 
     std::string db_file_name = new_db_name;
-    // 确保文件名以 .sqlite3 结尾
     if (db_file_name.find(".sqlite3") == std::string::npos) {
         db_file_name += ".sqlite3";
     }
@@ -55,7 +58,8 @@ void Application::perform_create_database(const std::string& new_db_name) {
     }
 }
 
-// --- perform_add 方法 (几乎不变) ---
+
+// --- [修正] perform_add 方法恢复原状 ---
 void Application::perform_add(const std::string& input) {
     FastQueryDB* current_db = db_manager_->get_current_db();
     if (!current_db) {
@@ -75,25 +79,27 @@ void Application::perform_add(const std::string& input) {
     std::string id;
     int processed_count = 0;
 
-    // --- SQLite 优化：使用事务 ---
-    // sqlite3_exec(current_db->get_db_handle(), "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
-
-    while (ss >> id) {
-        processed_count++;
-        if (!Validator::isValidIDFormat(id)) {
-            last_op_result_.invalid_format_count++;
-        } else {
-            std::string canonical_id = create_canonical_id(id);
-            if (current_db->add(canonical_id)) {
-                last_op_result_.success_count++;
+    current_db->begin_transaction();
+    try {
+        while (ss >> id) {
+            processed_count++;
+            if (!Validator::isValidIDFormat(id)) {
+                last_op_result_.invalid_format_count++;
             } else {
-                last_op_result_.exist_count++;
+                std::string canonical_id = create_canonical_id(id);
+                // --- 只传递一个参数 ---
+                if (current_db->add(canonical_id)) {
+                    last_op_result_.success_count++;
+                } else {
+                    last_op_result_.exist_count++;
+                }
             }
         }
+        current_db->commit_transaction();
+    } catch (...) {
+        current_db->rollback_transaction();
+        throw;
     }
-    
-    // sqlite3_exec(current_db->get_db_handle(), "COMMIT;", nullptr, nullptr, nullptr);
-
 
     if (processed_count == 0) {
         status_ = AppStatus::ErrorAddIDEmpty;
@@ -103,7 +109,7 @@ void Application::perform_add(const std::string& input) {
     status_ = AppStatus::AddCompleted;
 }
 
-// --- 其他方法 (保持不变) ---
+// ... perform_query 和其他 getter/setter 保持不变 ...
 void Application::perform_query(const std::string& input) {
     FastQueryDB* current_db = db_manager_->get_current_db();
     if (!current_db) {
@@ -167,6 +173,8 @@ void Application::set_status(AppStatus new_status) {
     status_ = new_status;
 }
 
+
+// --- [修正] perform_import_from_file 方法恢复原状 ---
 void Application::perform_import_from_file(const std::string& filepath) {
     if (filepath.empty()) {
         return;
@@ -178,29 +186,33 @@ void Application::perform_import_from_file(const std::string& filepath) {
         return;
     }
 
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
+    std::vector<std::string> lines;
+    try {
+        lines = IO::TextFileReader::read_all_lines(filepath);
+    } catch (const FileOpenException& e) {
+        std::cerr << e.what() << std::endl;
         status_ = AppStatus::ErrorFileOpenFailed;
+        return;
+    }
+
+    if (lines.empty()) {
+        status_ = AppStatus::ErrorFileEmpty;
         return;
     }
 
     last_op_result_ = {};
     last_op_result_.target_db_name = db_manager_->get_current_db_name();
+    
+    // --- 移除时间戳获取逻辑 ---
 
-    std::string line;
-    int processed_count = 0;
-
-    current_db->begin_transaction(); // Start transaction for performance
-
+    current_db->begin_transaction();
     try {
-        while (std::getline(file, line)) {
-            if (line.empty()) continue;
-
-            processed_count++;
+        for (const auto& line : lines) {
             if (!Validator::isValidIDFormat(line)) {
                 last_op_result_.invalid_format_count++;
             } else {
                 std::string canonical_id = create_canonical_id(line);
+                // --- 只传递一个参数 ---
                 if (current_db->add(canonical_id)) {
                     last_op_result_.success_count++;
                 } else {
@@ -208,15 +220,10 @@ void Application::perform_import_from_file(const std::string& filepath) {
                 }
             }
         }
-        current_db->commit_transaction(); // Commit all changes at once
+        current_db->commit_transaction();
     } catch (...) {
-        current_db->rollback_transaction(); // Rollback if any error occurs
+        current_db->rollback_transaction();
         throw;
-    }
-
-    if (processed_count == 0) {
-        status_ = AppStatus::ErrorFileEmpty;
-        return;
     }
 
     status_ = AppStatus::ImportCompleted;

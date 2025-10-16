@@ -75,8 +75,9 @@ bool Validator::isValidIDFormat(const std::string& id) {
     const size_t alpha_len = alpha_part.length();
     const size_t digit_len = digit_part.length();
 
-    bool is_alpha_len_valid = (alpha_len >= 2 && alpha_len <= 4);
-    bool is_digit_len_valid = (digit_len >= 2 && digit_len <= 4);
+    // 字母长度和数字长度
+    bool is_alpha_len_valid = (alpha_len >= 1); // 字母部分至少为1个
+    bool is_digit_len_valid = (digit_len >= 1);// 数字部分少为1个
 
     return is_alpha_len_valid && is_digit_len_valid;
 }

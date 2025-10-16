@@ -1,6 +1,6 @@
 // App/DatabaseManager.hpp
-#ifndef DATABASEMANAGER_HPP
-#define DATABASEMANAGER_HPP
+#ifndef DATABASE_MANAGER_HPP
+#define DATABASE_MANAGER_HPP
 
 #include "Data/FastQueryDB.hpp"
 #include <string>
@@ -24,7 +24,11 @@ public:
     std::vector<std::string> get_all_db_names() const;
 
 private:
+    void ensure_data_directory_exists(); // 确保数据目录存在
+    std::string get_db_filepath(const std::string& db_name) const; // 获取数据库文件的完整路径
+
     std::map<std::string, std::unique_ptr<FastQueryDB>> dbs_;
     std::string current_db_name_;
+    std::string data_directory_path_; // 保存数据目录的路径
 };
 #endif

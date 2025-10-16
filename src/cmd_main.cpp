@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "common/MessageFormatter.hpp"
+#include "common/version.hpp" // --- [新增] 引入版本头文件 ---
 #include <cstdlib>
 
 #ifdef _WIN32
@@ -33,6 +34,7 @@ void print_menu(const std::string& current_db) {
     std::cout << "4. 切换数据库" << std::endl;
     std::cout << "5. 从 .txt 文件批量导入" << std::endl;
     std::cout << "6. 查看当前库状态" << std::endl;
+    std::cout << "7. 查看当前版本" << std::endl; // --- [新增] 菜单选项 ---
     std::cout << "0. 退出" << std::endl;
     std::cout << "请输入选项: ";
 }
@@ -130,6 +132,14 @@ int main() {
                 std::cout << "当前库记录总数: " << app.get_total_records() << std::endl;
                 std::cout << "\n按回车键返回菜单...";
                 std::cin.get(); // 等待用户按键
+                break;
+            
+            // --- [新增] case 7 用于显示版本 ---
+            case 7:
+                clear_screen();
+                std::cout << "当前软件版本: " << AppVersion::VersionString << std::endl;
+                std::cout << "\n按回车键返回菜单...";
+                std::cin.get(); 
                 break;
 
             case 0:

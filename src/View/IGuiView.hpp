@@ -1,6 +1,6 @@
 // View/IGuiView.hpp
-#ifndef IGUIVIEW_HPP
-#define IGUIVIEW_HPP
+#ifndef I_GUI_VIEW_HPP
+#define I_GUI_VIEW_HPP
 
 #include "App/Application.hpp"
 #include <memory>

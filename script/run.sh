@@ -14,8 +14,6 @@ cd "$(dirname "$0")"
 echo "--- 当前目录: $(pwd)"
 
 # 执行Python构建脚本
-# 使用 python3 是为了更好的跨平台兼容性（Linux/macOS）
-# 在某些Windows环境（如msys2或git bash）中也能工作
-# 如果你确定只在Windows上并安装了Python启动器，也可以用 py build.py
+# 在msys2 环境中，建议使用 python3 而不是 py
 echo "--- 启动Python构建脚本..."
 python3 build.py

@@ -1,6 +1,6 @@
 // View/ImGui/UIConfig.hpp
-#ifndef UICONFIG_HPP
-#define UICONFIG_HPP
+#ifndef U_I_CONFIG_HPP
+#define U_I_CONFIG_HPP
 
 #include "App/Application.hpp" // 包含此文件以使用 OperationResult
 #include <string_view>

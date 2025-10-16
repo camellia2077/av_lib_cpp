@@ -5,12 +5,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# --- [新增] 使用变量定义可执行文件名 ---
+# --- 使用变量定义可执行文件名 ---
 set(GUI_EXECUTABLE_NAME "MyAVLib_Gui")
 set(CMD_EXECUTABLE_NAME "MyAVLib_Cmd")
 
 # -------------------------------------------------------------------
-# --- ImGui 库定义 (无需改动) ---
+# --- ImGui 库定义  ---
 add_library(imgui SHARED
     lib/imgui/imgui.cpp
     lib/imgui/imgui_draw.cpp
@@ -43,6 +43,7 @@ file(GLOB DATA_SOURCES
 file(GLOB VIEW_SOURCES "src/View/ImGui/*.cpp")
 file(GLOB UTILS_SOURCES "src/Utils/*.cpp")
 file(GLOB COMMON_SOURCES "src/common/*.cpp") 
+file(GLOB IO_SOURCES "src/IO/*.cpp") 
 
 
 # --- 定义可执行文件 ---
@@ -55,6 +56,7 @@ add_executable(${GUI_EXECUTABLE_NAME} WIN32
     ${VIEW_SOURCES}
     ${UTILS_SOURCES}
     ${COMMON_SOURCES}
+    ${IO_SOURCES}
 )
 
 # 2. 命令行版本
@@ -64,6 +66,7 @@ add_executable(${CMD_EXECUTABLE_NAME}
     ${DATA_SOURCES}
     ${UTILS_SOURCES}
     ${COMMON_SOURCES}
+    ${IO_SOURCES}
 )
 
 
