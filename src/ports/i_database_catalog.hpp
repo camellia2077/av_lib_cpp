@@ -2,23 +2,26 @@
 #ifndef I_DATABASE_CATALOG_HPP
 #define I_DATABASE_CATALOG_HPP
 
-#include "ports/i_id_repository.hpp"
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "ports/i_id_repository.hpp"
+
 class IDatabaseCatalog {
-public:
+ public:
   virtual ~IDatabaseCatalog() = default;
 
-  virtual void load_default_database() = 0;
-  virtual bool create_database(const std::string &db_name_raw) = 0;
-  virtual bool switch_to_database(const std::string &db_name) = 0;
-  virtual bool database_exists(const std::string &db_name) const = 0;
+  virtual void LoadDefaultDatabase() = 0;
+  virtual auto CreateDatabase(const std::string& db_name_raw) -> bool = 0;
+  virtual auto SwitchToDatabase(const std::string& db_name) -> bool = 0;
+  [[nodiscard]] virtual auto DatabaseExists(const std::string& db_name) const
+      -> bool = 0;
 
-  virtual IIdRepository *get_current_db() const = 0;
-  virtual const std::string &get_current_db_name() const = 0;
-  virtual std::vector<std::string> get_all_db_names() const = 0;
+  [[nodiscard]] virtual auto GetCurrentDb() const -> IIdRepository* = 0;
+  [[nodiscard]] virtual auto GetCurrentDbName() const -> const std::string& = 0;
+  [[nodiscard]] virtual auto GetAllDbNames() const
+      -> std::vector<std::string> = 0;
 };
 
 #endif

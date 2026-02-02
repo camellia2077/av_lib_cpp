@@ -7,16 +7,16 @@
 #include <vector>
 
 class FileOpenException : public std::runtime_error {
-public:
-  explicit FileOpenException(const std::string &message)
+ public:
+  explicit FileOpenException(const std::string& message)
       : std::runtime_error(message) {}
 };
 
 class ITextReader {
-public:
+ public:
   virtual ~ITextReader() = default;
-  virtual std::vector<std::string>
-  read_all_lines(const std::string &filepath) = 0;
+  virtual auto ReadAllLines(const std::string& filepath)
+      -> std::vector<std::string> = 0;
 };
 
 #endif

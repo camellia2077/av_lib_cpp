@@ -1,15 +1,17 @@
 // adapters/cli/framework/cli_app.cpp
 #include "cli_app.hpp"
-#include "adapters/cli/cli_presenter.hpp"
+
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+
+#include "adapters/cli/cli_presenter.hpp"
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-CLIApp::CLIApp(Application &app) : app_(app), commands_(app) {}
+CLIApp::CLIApp(Application& app) : app_(app), commands_(app) {}
 
 void CLIApp::clear_screen() {
 #ifdef _WIN32
@@ -20,11 +22,11 @@ void CLIApp::clear_screen() {
 }
 
 void CLIApp::print_status_message() {
-  std::string msg = CLIPresenter::format(app_);
+  std::string msg = CLIPresenter::Format(app_);
   std::cout << "结果: " << msg << std::endl;
 }
 
-void CLIApp::print_menu(const std::string &current_db) {
+void CLIApp::print_menu(const std::string& current_db) {
   std::cout << "\n--- 命令行查询工具 ---" << std::endl;
   std::cout << "当前数据库: [" << current_db << "]" << std::endl;
   std::cout << "1. 添加内容 (可批量, 用空格隔开)" << std::endl;
@@ -43,12 +45,12 @@ void CLIApp::clear_cin() {
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-void CLIApp::run() {
+void CLIApp::Run() {
 #ifdef _WIN32
   SetConsoleOutputCP(CP_UTF8);
 #endif
 
-  app_.load_database();
+  app_.LoadDatabase();
 
   int choice;
   std::string input_buffer;
@@ -56,7 +58,7 @@ void CLIApp::run() {
   while (true) {
     clear_screen();
     print_status_message();
-    print_menu(app_.get_current_db_name());
+    print_menu(app_.GetCurrentDbName());
 
     std::cin >> choice;
 
@@ -70,49 +72,49 @@ void CLIApp::run() {
     clear_cin();
 
     switch (choice) {
-    case 1:
-      std::cout << "输入要添加的内容: ";
-      std::getline(std::cin, input_buffer);
-      commands_.add_ids(input_buffer);
-      break;
-    case 2:
-      std::cout << "输入要查询的内容: ";
-      std::getline(std::cin, input_buffer);
-      commands_.query_id(input_buffer);
-      break;
-    case 3:
-      std::cout << "输入新数据库名称: ";
-      std::getline(std::cin, input_buffer);
-      commands_.create_database(input_buffer);
-      break;
-    case 4:
-      commands_.switch_database();
-      break;
-    case 5:
-      std::cout << "输入 .txt 文件路径: ";
-      std::getline(std::cin, input_buffer);
-      commands_.import_from_file(input_buffer);
-      break;
-    case 6:
-      clear_screen();
-      commands_.show_status();
-      break;
-    case 7:
-      clear_screen();
-      commands_.show_version();
-      break;
-    case 8:
-      std::cout << "输出 .txt 文件路径: ";
-      std::getline(std::cin, input_buffer);
-      commands_.export_to_file(input_buffer);
-      break;
-    case 0:
-      clear_screen();
-      std::cout << "程序退出。" << std::endl;
-      return;
-    default:
-      app_.set_error(ErrorCode::IdInvalid);
-      break;
+      case 1:
+        std::cout << "输入要添加的内容: ";
+        std::getline(std::cin, input_buffer);
+        commands_.AddIds(input_buffer);
+        break;
+      case 2:
+        std::cout << "输入要查询的内容: ";
+        std::getline(std::cin, input_buffer);
+        commands_.QueryId(input_buffer);
+        break;
+      case 3:
+        std::cout << "输入新数据库名称: ";
+        std::getline(std::cin, input_buffer);
+        commands_.CreateDatabase(input_buffer);
+        break;
+      case 4:
+        commands_.SwitchDatabase();
+        break;
+      case 5:
+        std::cout << "输入 .txt 文件路径: ";
+        std::getline(std::cin, input_buffer);
+        commands_.ImportFromFile(input_buffer);
+        break;
+      case 6:
+        clear_screen();
+        commands_.ShowStatus();
+        break;
+      case 7:
+        clear_screen();
+        commands_.ShowVersion();
+        break;
+      case 8:
+        std::cout << "输出 .txt 文件路径: ";
+        std::getline(std::cin, input_buffer);
+        commands_.ExportToFile(input_buffer);
+        break;
+      case 0:
+        clear_screen();
+        std::cout << "程序退出。" << std::endl;
+        return;
+      default:
+        app_.SetError(ErrorCode::kIdInvalid);
+        break;
     }
   }
 }

@@ -1,4 +1,6 @@
 // common/cmd_pch.hpp
+#include <sqlite3.h>
+
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -7,5 +9,3 @@
 #include <string_view>
 #include <unordered_set>
 #include <vector>
-
-#include <sqlite3.h>

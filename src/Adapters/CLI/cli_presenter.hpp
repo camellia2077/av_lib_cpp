@@ -2,61 +2,62 @@
 #ifndef CLI_PRESENTER_HPP
 #define CLI_PRESENTER_HPP
 
-#include "adapters/cli/cli_config.hpp"
-#include "app/application.hpp"
 #include <string>
 
+#include "adapters/cli/cli_config.hpp"
+#include "app/application.hpp"
+
 class CLIPresenter {
-public:
-  static std::string format(const Application &app) {
-    if (!app.get_info_message().empty()) {
-      return app.get_info_message();
+ public:
+  static auto Format(const Application& app) -> std::string {
+    if (!app.GetInfoMessage().empty()) {
+      return app.GetInfoMessage();
     }
-    if (app.get_last_error() != ErrorCode::None) {
-      switch (app.get_last_error()) {
-      case ErrorCode::DBNotExist:
-        return std::string(CLIConfig::Messages::ErrorDBNotExist);
-      case ErrorCode::DBCreateFailed:
-        return std::string(CLIConfig::Messages::ErrorDBCreateFailed);
-      case ErrorCode::DBNameExists:
-        return std::string(CLIConfig::Messages::ErrorDBNameExists);
-      case ErrorCode::DBNameEmpty:
-        return std::string(CLIConfig::Messages::ErrorDBNameEmpty);
-      case ErrorCode::AddIDEmpty:
-        return std::string(CLIConfig::Messages::ErrorAddIDEmpty);
-      case ErrorCode::QueryIDEmpty:
-        return std::string(CLIConfig::Messages::ErrorQueryIDEmpty);
-      case ErrorCode::IdInvalid:
-        return std::string(CLIConfig::Messages::ErrorIdInvalid);
-      case ErrorCode::FileOpenFailed:
-        return std::string(CLIConfig::Messages::ErrorFileOpenFailed);
-      case ErrorCode::FileEmpty:
-        return std::string(CLIConfig::Messages::ErrorFileEmpty);
-      case ErrorCode::None:
-        return std::string(CLIConfig::Messages::UnknownError);
+    if (app.GetLastError() != ErrorCode::kNone) {
+      switch (app.GetLastError()) {
+        case ErrorCode::kDbNotExist:
+          return std::string(CLIConfig::Messages::kErrorDbNotExist);
+        case ErrorCode::kDbCreateFailed:
+          return std::string(CLIConfig::Messages::kErrorDbCreateFailed);
+        case ErrorCode::kDbNameExists:
+          return std::string(CLIConfig::Messages::kErrorDbNameExists);
+        case ErrorCode::kDbNameEmpty:
+          return std::string(CLIConfig::Messages::kErrorDbNameEmpty);
+        case ErrorCode::kAddIdEmpty:
+          return std::string(CLIConfig::Messages::kErrorAddIdEmpty);
+        case ErrorCode::kQueryIdEmpty:
+          return std::string(CLIConfig::Messages::kErrorQueryIdEmpty);
+        case ErrorCode::kIdInvalid:
+          return std::string(CLIConfig::Messages::kErrorIdInvalid);
+        case ErrorCode::kFileOpenFailed:
+          return std::string(CLIConfig::Messages::kErrorFileOpenFailed);
+        case ErrorCode::kFileEmpty:
+          return std::string(CLIConfig::Messages::kErrorFileEmpty);
+        case ErrorCode::kNone:
+          return std::string(CLIConfig::Messages::kUnknownError);
       }
     }
 
-    switch (app.get_last_result()) {
-    case ResultCode::Idle:
-      return std::string(CLIConfig::Messages::Idle);
-    case ResultCode::Welcome:
-      return std::string(CLIConfig::Messages::Welcome);
-    case ResultCode::DBLoadSuccess:
-      return std::string(CLIConfig::Messages::DBLoadSuccess);
-    case ResultCode::DBSwitched:
-      return CLIConfig::Messages::dbSwitched(app.get_current_db_name());
-    case ResultCode::DBCreated:
-      return CLIConfig::Messages::dbCreated(app.get_current_db_name());
-    case ResultCode::AddCompleted:
-      return CLIConfig::Messages::addCompleted(app.get_last_add_result());
-    case ResultCode::QueryCompleted:
-      return CLIConfig::Messages::queryCompleted(app.get_last_query_result());
-    case ResultCode::ImportCompleted:
-      return CLIConfig::Messages::importCompleted(app.get_last_import_result());
+    switch (app.GetLastResult()) {
+      case ResultCode::kIdle:
+        return std::string(CLIConfig::Messages::kIdle);
+      case ResultCode::kWelcome:
+        return std::string(CLIConfig::Messages::kWelcome);
+      case ResultCode::kDbLoadSuccess:
+        return std::string(CLIConfig::Messages::kDbLoadSuccess);
+      case ResultCode::kDbSwitched:
+        return CLIConfig::Messages::DbSwitched(app.GetCurrentDbName());
+      case ResultCode::kDbCreated:
+        return CLIConfig::Messages::DbCreated(app.GetCurrentDbName());
+      case ResultCode::kAddCompleted:
+        return CLIConfig::Messages::AddCompleted(app.GetLastAddResult());
+      case ResultCode::kQueryCompleted:
+        return CLIConfig::Messages::QueryCompleted(app.GetLastQueryResult());
+      case ResultCode::kImportCompleted:
+        return CLIConfig::Messages::ImportCompleted(app.GetLastImportResult());
     }
 
-    return std::string(CLIConfig::Messages::UnknownError);
+    return std::string(CLIConfig::Messages::kUnknownError);
   }
 };
 

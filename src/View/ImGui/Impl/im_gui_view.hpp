@@ -2,32 +2,33 @@
 #ifndef IM_GUI_VIEW_HPP
 #define IM_GUI_VIEW_HPP
 
+#include <memory>
+
 #include "view/i_gui_view.hpp"
 #include "view/imgui/impl/imgui_settings_store.hpp"
 #include "view/imgui/impl/theme_manager.hpp"
 #include "view/imgui/impl/ui_panel.hpp"
-#include <memory>
 
 struct GLFWwindow;
 
 class ImGuiView : public IGuiView {
-public:
-  explicit ImGuiView(Application &app);
+ public:
+  explicit ImGuiView(Application& app);
   ~ImGuiView() override = default;
 
-  bool init() override;
-  void run() override;
-  void cleanup() override;
+  auto Init() -> bool override;
+  void Run() override;
+  void Cleanup() override;
 
-private:
-  void render_frame();
+ private:
+  void RenderFrame();
 
-  Application &app_;
-  GLFWwindow *window_;
+  Application& app_;
+  GLFWwindow* window_{nullptr};
 
   std::unique_ptr<ThemeManager> theme_manager_;
   std::unique_ptr<ImGuiSettingsStore> settings_store_;
   std::unique_ptr<UIPanel> ui_panel_;
 };
 
-#endif // IM_GUI_VIEW_HPP
+#endif  // IM_GUI_VIEW_HPP

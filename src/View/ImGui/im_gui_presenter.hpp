@@ -2,61 +2,62 @@
 #ifndef IM_GUI_PRESENTER_HPP
 #define IM_GUI_PRESENTER_HPP
 
-#include "app/application.hpp"
-#include "view/imgui/impl/ui_config.hpp"
 #include <string>
 
+#include "app/application.hpp"
+#include "view/imgui/impl/ui_config.hpp"
+
 class ImGuiPresenter {
-public:
-  static std::string format(const Application &app) {
-    if (!app.get_info_message().empty()) {
-      return app.get_info_message();
+ public:
+  static auto Format(const Application& app) -> std::string {
+    if (!app.GetInfoMessage().empty()) {
+      return app.GetInfoMessage();
     }
-    if (app.get_last_error() != ErrorCode::None) {
-      switch (app.get_last_error()) {
-      case ErrorCode::DBNotExist:
-        return std::string(UIConfig::Messages::ErrorDBNotExist);
-      case ErrorCode::DBCreateFailed:
-        return std::string(UIConfig::Messages::ErrorDBCreateFailed);
-      case ErrorCode::DBNameExists:
-        return std::string(UIConfig::Messages::ErrorDBNameExists);
-      case ErrorCode::DBNameEmpty:
-        return std::string(UIConfig::Messages::ErrorDBNameEmpty);
-      case ErrorCode::AddIDEmpty:
-        return std::string(UIConfig::Messages::ErrorAddIDEmpty);
-      case ErrorCode::QueryIDEmpty:
-        return std::string(UIConfig::Messages::ErrorQueryIDEmpty);
-      case ErrorCode::IdInvalid:
-        return std::string(UIConfig::Messages::ErrorIdInvalid);
-      case ErrorCode::FileOpenFailed:
-        return std::string(UIConfig::Messages::ErrorFileOpenFailed);
-      case ErrorCode::FileEmpty:
-        return std::string(UIConfig::Messages::ErrorFileEmpty);
-      case ErrorCode::None:
-        return std::string(UIConfig::Messages::UnknownError);
+    if (app.GetLastError() != ErrorCode::kNone) {
+      switch (app.GetLastError()) {
+        case ErrorCode::kDbNotExist:
+          return std::string(UIConfig::Messages::kErrorDbNotExist);
+        case ErrorCode::kDbCreateFailed:
+          return std::string(UIConfig::Messages::kErrorDbCreateFailed);
+        case ErrorCode::kDbNameExists:
+          return std::string(UIConfig::Messages::kErrorDbNameExists);
+        case ErrorCode::kDbNameEmpty:
+          return std::string(UIConfig::Messages::kErrorDbNameEmpty);
+        case ErrorCode::kAddIdEmpty:
+          return std::string(UIConfig::Messages::kErrorAddIdEmpty);
+        case ErrorCode::kQueryIdEmpty:
+          return std::string(UIConfig::Messages::kErrorQueryIdEmpty);
+        case ErrorCode::kIdInvalid:
+          return std::string(UIConfig::Messages::kErrorIdInvalid);
+        case ErrorCode::kFileOpenFailed:
+          return std::string(UIConfig::Messages::kErrorFileOpenFailed);
+        case ErrorCode::kFileEmpty:
+          return std::string(UIConfig::Messages::kErrorFileEmpty);
+        case ErrorCode::kNone:
+          return std::string(UIConfig::Messages::kUnknownError);
       }
     }
 
-    switch (app.get_last_result()) {
-    case ResultCode::Idle:
-      return std::string(UIConfig::Messages::Idle);
-    case ResultCode::Welcome:
-      return std::string(UIConfig::Messages::Welcome);
-    case ResultCode::DBLoadSuccess:
-      return std::string(UIConfig::Messages::DBLoadSuccess);
-    case ResultCode::DBSwitched:
-      return UIConfig::Messages::dbSwitched(app.get_current_db_name());
-    case ResultCode::DBCreated:
-      return UIConfig::Messages::dbCreated(app.get_current_db_name());
-    case ResultCode::AddCompleted:
-      return UIConfig::Messages::addCompleted(app.get_last_add_result());
-    case ResultCode::QueryCompleted:
-      return UIConfig::Messages::queryCompleted(app.get_last_query_result());
-    case ResultCode::ImportCompleted:
-      return UIConfig::Messages::importCompleted(app.get_last_import_result());
+    switch (app.GetLastResult()) {
+      case ResultCode::kIdle:
+        return std::string(UIConfig::Messages::kIdle);
+      case ResultCode::kWelcome:
+        return std::string(UIConfig::Messages::kWelcome);
+      case ResultCode::kDbLoadSuccess:
+        return std::string(UIConfig::Messages::kDbLoadSuccess);
+      case ResultCode::kDbSwitched:
+        return UIConfig::Messages::DbSwitched(app.GetCurrentDbName());
+      case ResultCode::kDbCreated:
+        return UIConfig::Messages::DbCreated(app.GetCurrentDbName());
+      case ResultCode::kAddCompleted:
+        return UIConfig::Messages::AddCompleted(app.GetLastAddResult());
+      case ResultCode::kQueryCompleted:
+        return UIConfig::Messages::QueryCompleted(app.GetLastQueryResult());
+      case ResultCode::kImportCompleted:
+        return UIConfig::Messages::ImportCompleted(app.GetLastImportResult());
     }
 
-    return std::string(UIConfig::Messages::UnknownError);
+    return std::string(UIConfig::Messages::kUnknownError);
   }
 };
 

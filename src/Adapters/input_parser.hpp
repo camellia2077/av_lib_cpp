@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace Adapters {
-inline std::vector<std::string> split_ids(const std::string &input) {
+inline auto SplitIds(const std::string& input) -> std::vector<std::string> {
   std::istringstream iss(input);
   std::vector<std::string> ids;
   std::string token;
@@ -16,6 +16,6 @@ inline std::vector<std::string> split_ids(const std::string &input) {
   }
   return ids;
 }
-} // namespace Adapters
+}  // namespace Adapters
 
 #endif

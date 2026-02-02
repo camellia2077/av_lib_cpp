@@ -1,43 +1,44 @@
 // app/application.cpp
 #include "application.hpp"
-#include "utils/validator.hpp"
+
 #include <stdexcept>
 #include <vector>
 
+#include "utils/validator.hpp"
+
 // --- create_canonical_id 辅助函数 (保持不变) ---
 namespace {
-std::string create_canonical_id(const std::string &raw_id) {
+auto CreateCanonicalId(const std::string& raw_id) -> std::string {
   std::string canonical_id;
   canonical_id.reserve(raw_id.length());
   for (char c : raw_id) {
-    if (Validator::is_alpha_char(c) || Validator::is_digit_char(c)) {
+    if (Validator::IsAlphaChar(c) || Validator::IsDigitChar(c)) {
       canonical_id += c;
     }
   }
   return canonical_id;
 }
-} // namespace
+}  // namespace
 
 Application::Application(std::unique_ptr<IDatabaseCatalog> db_catalog)
     : db_manager_(std::move(db_catalog)) {
   if (!db_manager_) {
     throw std::invalid_argument("db_catalog");
   }
-  reset_state(ResultCode::Welcome);
+  ResetState(ResultCode::kWelcome);
 }
 
 Application::~Application() = default;
 
-// ... load_database, perform_create_database 等函数保持不变 ...
-void Application::load_database() {
-  db_manager_->load_default_database();
-  set_result(ResultCode::DBLoadSuccess);
+void Application::LoadDatabase() {
+  db_manager_->LoadDefaultDatabase();
+  SetResult(ResultCode::kDbLoadSuccess);
 }
 
-void Application::perform_create_database(const std::string &new_db_name) {
-  set_error(ErrorCode::None);
+void Application::PerformCreateDatabase(const std::string& new_db_name) {
+  SetError(ErrorCode::kNone);
   if (new_db_name.empty()) {
-    set_error(ErrorCode::DBNameEmpty);
+    SetError(ErrorCode::kDbNameEmpty);
     return;
   }
 
@@ -46,226 +47,223 @@ void Application::perform_create_database(const std::string &new_db_name) {
     db_file_name += ".sqlite3";
   }
 
-  if (db_manager_->database_exists(db_file_name)) {
-    set_error(ErrorCode::DBNameExists);
+  if (db_manager_->DatabaseExists(db_file_name)) {
+    SetError(ErrorCode::kDbNameExists);
     return;
   }
 
-  if (db_manager_->create_database(new_db_name)) {
-    set_result(ResultCode::DBCreated);
+  if (db_manager_->CreateDatabase(new_db_name)) {
+    SetResult(ResultCode::kDbCreated);
   } else {
-    set_error(ErrorCode::DBCreateFailed);
+    SetError(ErrorCode::kDbCreateFailed);
   }
 }
 
-// --- [修正] perform_add 方法恢复原状 ---
-AddResult Application::perform_add(const std::vector<std::string> &ids) {
+auto Application::PerformAdd(const std::vector<std::string>& ids) -> AddResult {
   AddResult result;
-  set_error(ErrorCode::None);
-  IIdRepository *current_db = db_manager_->get_current_db();
-  if (!current_db) {
-    set_error(ErrorCode::DBNotExist);
+  SetError(ErrorCode::kNone);
+  IIdRepository* current_db = db_manager_->GetCurrentDb();
+  if (current_db == nullptr) {
+    SetError(ErrorCode::kDbNotExist);
     last_add_result_ = result;
     return result;
   }
 
   if (ids.empty()) {
-    set_error(ErrorCode::AddIDEmpty);
+    SetError(ErrorCode::kAddIdEmpty);
     last_add_result_ = result;
     return result;
   }
 
-  result.target_db_name = db_manager_->get_current_db_name();
+  result.target_db_name = db_manager_->GetCurrentDbName();
 
-  current_db->begin_transaction();
+  current_db->BeginTransaction();
   try {
-    for (const auto &id : ids) {
+    for (const auto& id : ids) {
       if (id.empty()) {
         continue;
       }
-      if (!Validator::isValidIDFormat(id)) {
+      if (!Validator::IsValidIdFormat(id)) {
         result.invalid_format_count++;
       } else {
-        std::string canonical_id = create_canonical_id(id);
-        // --- 只传递一个参数 ---
-        if (current_db->add(canonical_id)) {
+        std::string canonical_id = CreateCanonicalId(id);
+        if (current_db->Add(canonical_id)) {
           result.success_count++;
         } else {
           result.exist_count++;
         }
       }
     }
-    current_db->commit_transaction();
+    current_db->CommitTransaction();
   } catch (...) {
-    current_db->rollback_transaction();
+    current_db->RollbackTransaction();
     throw;
   }
 
   if (result.success_count == 0 && result.exist_count == 0 &&
       result.invalid_format_count == 0) {
-    set_error(ErrorCode::AddIDEmpty);
+    SetError(ErrorCode::kAddIdEmpty);
     last_add_result_ = result;
     return result;
   }
 
-  set_result(ResultCode::AddCompleted);
+  SetResult(ResultCode::kAddCompleted);
   last_add_result_ = result;
   return result;
 }
 
-// ... perform_query 和其他 getter/setter 保持不变 ...
-QueryResult Application::perform_query(const std::string &input) {
+auto Application::PerformQuery(const std::string& input) -> QueryResult {
   QueryResult result;
-  set_error(ErrorCode::None);
-  IIdRepository *current_db = db_manager_->get_current_db();
-  if (!current_db) {
-    set_error(ErrorCode::DBNotExist);
+  SetError(ErrorCode::kNone);
+  IIdRepository* current_db = db_manager_->GetCurrentDb();
+  if (current_db == nullptr) {
+    SetError(ErrorCode::kDbNotExist);
     last_query_result_ = result;
     return result;
   }
 
   if (input.empty()) {
-    set_error(ErrorCode::QueryIDEmpty);
+    SetError(ErrorCode::kQueryIdEmpty);
     last_query_result_ = result;
     return result;
   }
 
-  result.target_db_name = db_manager_->get_current_db_name();
+  result.target_db_name = db_manager_->GetCurrentDbName();
 
-  if (!Validator::isValidIDFormat(input)) {
+  if (!Validator::IsValidIdFormat(input)) {
     result.invalid_format_count = 1;
   } else {
-    std::string canonical_id = create_canonical_id(input);
-    if (current_db->exists(canonical_id)) {
+    std::string canonical_id = CreateCanonicalId(input);
+    if (current_db->Exists(canonical_id)) {
       result.found_count = 1;
     } else {
       result.not_found_count = 1;
     }
   }
 
-  set_result(ResultCode::QueryCompleted);
+  SetResult(ResultCode::kQueryCompleted);
   last_query_result_ = result;
   return result;
 }
 
-void Application::set_current_database(const std::string &db_name) {
-  set_error(ErrorCode::None);
-  if (db_manager_->switch_to_database(db_name)) {
-    set_result(ResultCode::DBSwitched);
+void Application::SetCurrentDatabase(const std::string& db_name) {
+  SetError(ErrorCode::kNone);
+  if (db_manager_->SwitchToDatabase(db_name)) {
+    SetResult(ResultCode::kDbSwitched);
   } else {
-    set_error(ErrorCode::DBNotExist);
+    SetError(ErrorCode::kDbNotExist);
   }
 }
 
-std::vector<std::string> Application::get_database_names() const {
-  return db_manager_->get_all_db_names();
+auto Application::GetDatabaseNames() const -> std::vector<std::string> {
+  return db_manager_->GetAllDbNames();
 }
 
-const std::string &Application::get_current_db_name() const {
-  return db_manager_->get_current_db_name();
+auto Application::GetCurrentDbName() const -> const std::string& {
+  return db_manager_->GetCurrentDbName();
 }
 
-size_t Application::get_total_records() const {
-  IIdRepository *current_db = db_manager_->get_current_db();
-  return current_db ? current_db->get_count() : 0;
+auto Application::GetTotalRecords() const -> size_t {
+  IIdRepository* current_db = db_manager_->GetCurrentDb();
+  return (current_db != nullptr) ? current_db->GetCount() : 0;
 }
 
-ResultCode Application::get_last_result() const { return last_result_; }
+auto Application::GetLastResult() const -> ResultCode {
+  return last_result_;
+}
 
-ErrorCode Application::get_last_error() const { return last_error_; }
+auto Application::GetLastError() const -> ErrorCode {
+  return last_error_;
+}
 
-const std::string &Application::get_info_message() const {
+auto Application::GetInfoMessage() const -> const std::string& {
   return info_message_;
 }
 
-const AddResult &Application::get_last_add_result() const {
+auto Application::GetLastAddResult() const -> const AddResult& {
   return last_add_result_;
 }
 
-const QueryResult &Application::get_last_query_result() const {
+auto Application::GetLastQueryResult() const -> const QueryResult& {
   return last_query_result_;
 }
 
-const ImportResult &Application::get_last_import_result() const {
+auto Application::GetLastImportResult() const -> const ImportResult& {
   return last_import_result_;
 }
 
-void Application::set_error(ErrorCode error) {
+void Application::SetError(ErrorCode error) {
   last_error_ = error;
   info_message_.clear();
 }
 
-void Application::set_result(ResultCode result) {
+void Application::SetResult(ResultCode result) {
   last_result_ = result;
-  last_error_ = ErrorCode::None;
+  last_error_ = ErrorCode::kNone;
   info_message_.clear();
 }
 
-void Application::reset_state(ResultCode result) {
+void Application::ResetState(ResultCode result) {
   last_result_ = result;
-  last_error_ = ErrorCode::None;
+  last_error_ = ErrorCode::kNone;
   info_message_.clear();
 }
 
-void Application::set_info_message(const std::string &message) {
+void Application::SetInfoMessage(const std::string& message) {
   info_message_ = message;
 }
 
-// --- [修正] perform_import_lines 方法恢复原状 ---
-ImportResult
-Application::perform_import_lines(const std::vector<std::string> &lines) {
+auto Application::PerformImportLines(const std::vector<std::string>& lines)
+    -> ImportResult {
   ImportResult result;
-  set_error(ErrorCode::None);
-  IIdRepository *current_db = db_manager_->get_current_db();
-  if (!current_db) {
-    set_error(ErrorCode::DBNotExist);
+  SetError(ErrorCode::kNone);
+  IIdRepository* current_db = db_manager_->GetCurrentDb();
+  if (current_db == nullptr) {
+    SetError(ErrorCode::kDbNotExist);
     last_import_result_ = result;
     return result;
   }
 
   if (lines.empty()) {
-    set_error(ErrorCode::FileEmpty);
+    SetError(ErrorCode::kFileEmpty);
     last_import_result_ = result;
     return result;
   }
 
-  result.target_db_name = db_manager_->get_current_db_name();
+  result.target_db_name = db_manager_->GetCurrentDbName();
 
-  // --- 移除时间戳获取逻辑 ---
-
-  current_db->begin_transaction();
+  current_db->BeginTransaction();
   try {
-    for (const auto &line : lines) {
-      if (!Validator::isValidIDFormat(line)) {
+    for (const auto& line : lines) {
+      if (!Validator::IsValidIdFormat(line)) {
         result.invalid_format_count++;
       } else {
-        std::string canonical_id = create_canonical_id(line);
-        // --- 只传递一个参数 ---
-        if (current_db->add(canonical_id)) {
+        std::string canonical_id = CreateCanonicalId(line);
+        if (current_db->Add(canonical_id)) {
           result.success_count++;
         } else {
           result.exist_count++;
         }
       }
     }
-    current_db->commit_transaction();
+    current_db->CommitTransaction();
   } catch (...) {
-    current_db->rollback_transaction();
+    current_db->RollbackTransaction();
     throw;
   }
 
-  set_result(ResultCode::ImportCompleted);
+  SetResult(ResultCode::kImportCompleted);
   last_import_result_ = result;
   return result;
 }
 
-bool Application::fetch_all_ids(std::vector<std::string> &out_ids) {
-  set_error(ErrorCode::None);
-  IIdRepository *current_db = db_manager_->get_current_db();
-  if (!current_db) {
-    set_error(ErrorCode::DBNotExist);
+auto Application::FetchAllIds(std::vector<std::string>& out_ids) -> bool {
+  SetError(ErrorCode::kNone);
+  IIdRepository* current_db = db_manager_->GetCurrentDb();
+  if (current_db == nullptr) {
+    SetError(ErrorCode::kDbNotExist);
     return false;
   }
-  out_ids = current_db->get_all_ids();
+  out_ids = current_db->GetAllIds();
   return true;
 }

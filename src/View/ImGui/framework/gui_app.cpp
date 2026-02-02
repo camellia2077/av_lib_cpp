@@ -3,11 +3,11 @@
 
 GuiApp::GuiApp(std::unique_ptr<IGuiView> view) : view_(std::move(view)) {}
 
-void GuiApp::run() {
-  if (view_ && view_->init()) {
-    view_->run();
+void GuiApp::Run() {
+  if (view_ && view_->Init()) {
+    view_->Run();
   }
   if (view_) {
-    view_->cleanup();
+    view_->Cleanup();
   }
 }

@@ -2,22 +2,23 @@
 #ifndef U_I_PANEL_HPP
 #define U_I_PANEL_HPP
 
-#include "app/application.hpp"
-#include "view/imgui/impl/theme_manager.hpp" // 包含ThemeManager
 #include <string>
 
+#include "app/application.hpp"
+#include "view/imgui/impl/theme_manager.hpp"  // 包含ThemeManager
+
 class UIPanel {
-public:
+ public:
   // 构造函数现在接收一个ThemeManager的引用
-  explicit UIPanel(Application &app, ThemeManager &theme_manager);
+  explicit UIPanel(Application& app, ThemeManager& theme_manager);
 
-  void render();
+  void Render();
 
-private:
-  void update_status_message();
+ private:
+  void UpdateStatusMessage();
 
-  Application &app_;
-  ThemeManager &theme_manager_; // 保存对ThemeManager的引用
+  Application& app_;
+  ThemeManager& theme_manager_;  // 保存对ThemeManager的引用
 
   char add_buffer_[128];
   char query_buffer_[128];
@@ -26,4 +27,4 @@ private:
   std::string status_message_;
 };
 
-#endif // U_I_PANEL_HPP
+#endif  // U_I_PANEL_HPP

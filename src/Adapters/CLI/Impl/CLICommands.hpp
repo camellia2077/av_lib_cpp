@@ -2,25 +2,26 @@
 #ifndef CLI_COMMANDS_HPP
 #define CLI_COMMANDS_HPP
 
-#include "app/application.hpp"
 #include <string>
 #include <vector>
 
+#include "app/application.hpp"
+
 class CLICommands {
-public:
-  explicit CLICommands(Application &app);
+ public:
+  explicit CLICommands(Application& app);
 
-  void add_ids(const std::string &input);
-  void query_id(const std::string &input);
-  void create_database(const std::string &name);
-  void switch_database();
-  void import_from_file(const std::string &filepath);
-  void export_to_file(const std::string &filepath);
-  void show_status();
-  void show_version();
+  void AddIds(const std::string& input);
+  void QueryId(const std::string& input);
+  void CreateDatabase(const std::string& name);
+  void SwitchDatabase();
+  void ImportFromFile(const std::string& filepath);
+  void ExportToFile(const std::string& filepath);
+  void ShowStatus();
+  static void ShowVersion();
 
-private:
-  Application &app_;
+ private:
+  Application& app_;
 };
 
 #endif

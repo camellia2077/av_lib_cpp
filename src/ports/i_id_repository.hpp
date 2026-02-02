@@ -7,18 +7,18 @@
 #include <vector>
 
 class IIdRepository {
-public:
+ public:
   virtual ~IIdRepository() = default;
 
-  virtual bool add(const std::string &id) = 0;
-  virtual bool exists(const std::string &id) const = 0;
-  virtual size_t get_count() const = 0;
-  virtual std::vector<std::string> get_all_ids() const = 0;
+  virtual auto Add(const std::string& id) -> bool = 0;
+  [[nodiscard]] virtual auto Exists(const std::string& id) const -> bool = 0;
+  [[nodiscard]] virtual auto GetCount() const -> size_t = 0;
+  [[nodiscard]] virtual auto GetAllIds() const -> std::vector<std::string> = 0;
 
   // Transaction control for bulk operations.
-  virtual void begin_transaction() = 0;
-  virtual void commit_transaction() = 0;
-  virtual void rollback_transaction() = 0;
+  virtual void BeginTransaction() = 0;
+  virtual void CommitTransaction() = 0;
+  virtual void RollbackTransaction() = 0;
 };
 
 #endif

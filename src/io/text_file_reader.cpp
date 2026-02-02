@@ -1,16 +1,17 @@
 // io/text_file_reader.cpp
 #include "io/text_file_reader.hpp"
+
 #include <fstream>
 #include <string>
 #include <vector>
 
 namespace IO {
 
-std::vector<std::string>
-TextFileReader::read_all_lines(const std::string &filepath) {
+auto TextFileReader::ReadAllLines(const std::string& filepath)
+    -> std::vector<std::string> {
   std::ifstream file(filepath);
   if (!file.is_open()) {
-    throw FileOpenException("无法打开文件: " + filepath);
+    throw std::runtime_error("无法打开文件: " + filepath);
   }
 
   std::vector<std::string> lines;
@@ -26,4 +27,4 @@ TextFileReader::read_all_lines(const std::string &filepath) {
   return lines;
 }
 
-} // namespace IO
+}  // namespace IO

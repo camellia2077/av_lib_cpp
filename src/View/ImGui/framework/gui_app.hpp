@@ -2,15 +2,16 @@
 #ifndef GUI_APP_HPP
 #define GUI_APP_HPP
 
-#include "view/i_gui_view.hpp"
 #include <memory>
 
-class GuiApp {
-public:
-  explicit GuiApp(std::unique_ptr<IGuiView> view);
-  void run();
+#include "view/i_gui_view.hpp"
 
-private:
+class GuiApp {
+ public:
+  explicit GuiApp(std::unique_ptr<IGuiView> view);
+  void Run();
+
+ private:
   std::unique_ptr<IGuiView> view_;
 };
 

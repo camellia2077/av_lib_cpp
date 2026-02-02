@@ -8,20 +8,20 @@
 #include "view/imgui/impl/theme_manager.hpp"
 
 class ImGuiSettingsStore : public SettingsStore {
-public:
-  explicit ImGuiSettingsStore(ThemeManager &theme_manager);
-  void registerSettingsHandler() override;
+ public:
+  explicit ImGuiSettingsStore(ThemeManager& theme_manager);
+  void RegisterSettingsHandler() override;
 
-private:
-  static void *readOpen(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
-                        const char *name);
-  static void readLine(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
-                       void *entry, const char *line);
-  static void writeAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
-                       ImGuiTextBuffer *buf);
+ private:
+  static auto ReadOpen(ImGuiContext* ctx, ImGuiSettingsHandler* handler,
+                       const char* name) -> void*;
+  static void ReadLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler,
+                       void* entry, const char* line);
+  static void WriteAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler,
+                       ImGuiTextBuffer* buf);
 
-  ThemeManager &theme_manager_;
-  static ImGuiSettingsStore *instance_for_callback_;
+  ThemeManager& theme_manager_;
+  static ImGuiSettingsStore* instance_for_callback_;
 };
 
 #endif

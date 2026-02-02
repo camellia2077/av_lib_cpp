@@ -3,9 +3,9 @@
 #define SETTINGS_STORE_HPP
 
 class SettingsStore {
-public:
+ public:
   virtual ~SettingsStore() = default;
-  virtual void registerSettingsHandler() = 0;
+  virtual void RegisterSettingsHandler() = 0;
 };
 
 #endif

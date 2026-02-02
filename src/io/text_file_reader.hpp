@@ -2,16 +2,18 @@
 #ifndef TEXT_FILE_READER_HPP
 #define TEXT_FILE_READER_HPP
 
-#include "ports/i_text_reader.hpp"
 #include <string>
 #include <vector>
 
+#include "ports/i_text_reader.hpp"
+
 namespace IO {
 class TextFileReader : public ITextReader {
-public:
+ public:
   // 读取文件所有行，如果失败则抛出异常
-  std::vector<std::string> read_all_lines(const std::string &filepath) override;
+  auto ReadAllLines(const std::string& filepath)
+      -> std::vector<std::string> override;
 };
-} // namespace IO
+}  // namespace IO
 
-#endif // TEXT_FILE_READER_HPP
+#endif  // TEXT_FILE_READER_HPP

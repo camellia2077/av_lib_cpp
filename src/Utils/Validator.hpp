@@ -12,16 +12,20 @@ namespace Validator {
  * @param id 要验证的ID字符串
  * @return 如果格式正确则返回true, 否则返回false
  */
-bool isValidIDFormat(const std::string &id);
+auto IsValidIdFormat(const std::string& id) -> bool;
 
 // --- 移至头文件的公共辅助函数 ---
 // 使其在 Application.cpp 中也可用
-inline bool is_alpha_char(char c) {
+inline auto IsAlphaChar(char c) -> bool {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-inline bool is_digit_char(char c) { return c >= '0' && c <= '9'; }
+inline auto IsDigitChar(char c) -> bool {
+  return c >= '0' && c <= '9';
+}
 
-inline bool is_space_char(char c) { return c == ' ' || c == '\t'; }
-} // namespace Validator
+inline auto IsSpaceChar(char c) -> bool {
+  return c == ' ' || c == '\t';
+}
+}  // namespace Validator
 #endif
