@@ -4,69 +4,32 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(FONTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fonts)
 
 # --- 使用变量定义可执行文件名 ---
 set(GUI_EXECUTABLE_NAME "MyAVLib_Gui")
 set(CMD_EXECUTABLE_NAME "MyAVLib_Cmd")
 
-# -------------------------------------------------------------------
-# --- ImGui 库定义  ---
-add_library(imgui SHARED
-    lib/imgui/imgui.cpp
-    lib/imgui/imgui_draw.cpp
-    lib/imgui/imgui_tables.cpp
-    lib/imgui/imgui_widgets.cpp
-    lib/imgui/backends/imgui_impl_glfw.cpp
-    lib/imgui/backends/imgui_impl_opengl3.cpp
-)
-target_include_directories(imgui PUBLIC
-    lib/imgui
-    lib/imgui/backends
-)
-target_link_libraries(imgui PUBLIC
-    glfw
-    ${OPENGL_LIBRARIES}
-)
-# -------------------------------------------------------------------
-
-# --- 查找依赖库 ---
-find_package(glfw3 3.3 REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(SQLite3 REQUIRED)
-
-
-# --- 自动发现源文件 ---
-file(GLOB APP_SOURCES "src/App/*.cpp")
-file(GLOB DATA_SOURCES 
-    "src/Data/*.cpp"
-)
-file(GLOB VIEW_SOURCES "src/View/ImGui/*.cpp")
-file(GLOB UTILS_SOURCES "src/Utils/*.cpp")
-file(GLOB COMMON_SOURCES "src/common/*.cpp") 
-file(GLOB IO_SOURCES "src/IO/*.cpp") 
+# --- CMake 分层配置 ---
+include(cmake/third_party.cmake)
+include(cmake/sources.cmake)
+include(cmake/clang_tools.cmake)
 
 
 # --- 定义可执行文件 ---
 
 # 1. GUI 版本
 add_executable(${GUI_EXECUTABLE_NAME} WIN32
-    src/main.cpp
-    ${APP_SOURCES}
-    ${DATA_SOURCES}
-    ${VIEW_SOURCES}
-    ${UTILS_SOURCES}
-    ${COMMON_SOURCES}
-    ${IO_SOURCES}
+    ${GUI_ENTRY_SOURCE}
+    ${CORE_SOURCES}
+    ${GUI_SOURCES}
 )
 
 # 2. 命令行版本
 add_executable(${CMD_EXECUTABLE_NAME}
-    src/cmd_main.cpp
-    ${APP_SOURCES}
-    ${DATA_SOURCES}
-    ${UTILS_SOURCES}
-    ${COMMON_SOURCES}
-    ${IO_SOURCES}
+    ${CMD_ENTRY_SOURCE}
+    ${CORE_SOURCES}
+    ${CLI_SOURCES}
 )
 
 
@@ -88,6 +51,13 @@ target_link_libraries(${GUI_EXECUTABLE_NAME} PRIVATE
     "-s"
     ${OPENGL_LIBRARIES}
     SQLite::SQLite3
+)
+
+# --- 运行前复制字体资源 ---
+add_custom_command(TARGET ${GUI_EXECUTABLE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${FONTS_DIR}
+    $<TARGET_FILE_DIR:${GUI_EXECUTABLE_NAME}>/fonts
 )
 
 # --- 为 命令行版本 配置 ---

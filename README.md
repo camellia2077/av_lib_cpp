@@ -6,15 +6,15 @@
 ├── App
 │   ├── Application.cpp
 │   ├── Application.hpp
-│   ├── DatabaseManager.cpp
-│   └── DatabaseManager.hpp
+│   ├── database_manager.cpp
+│   └── database_manager.hpp
 ├── cmd_main.cpp
 ├── common
 │   ├── cmd_pch.hpp
 │   ├── MessageFormatter.cpp
 │   ├── MessageFormatter.hpp
 │   └── pch.hpp
-├── Data/
+├── data/
 │   ├── FastQueryDB.cpp # Facade封装
 │   ├── FastQueryDB.hpp
 │   ├── repository/

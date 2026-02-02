@@ -15,5 +15,9 @@ echo "--- 当前目录: $(pwd)"
 
 # 执行Python构建脚本
 # 在msys2 环境中，建议使用 python3 而不是 py
+if command -v ccache >/dev/null 2>&1; then
+  echo "--- 检测到 ccache，自动启用。"
+  export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+fi
 echo "--- 启动Python构建脚本..."
 python3 build.py
