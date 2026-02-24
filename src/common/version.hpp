@@ -5,7 +5,7 @@
 #include <string_view>
 
 namespace AppVersion {
-constexpr std::string_view kVersionString = "0.1.1";
+constexpr std::string_view kVersionString = "v0.3.0";
 }
 
 #endif  // VERSION_HPP

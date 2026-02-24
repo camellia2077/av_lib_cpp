@@ -3,36 +3,26 @@
 
 ## 文件夹层级
 ```
-├── App
-│   ├── Application.cpp
-│   ├── Application.hpp
-│   ├── database_manager.cpp
-│   └── database_manager.hpp
-├── cmd_main.cpp
-├── common
-│   ├── cmd_pch.hpp
-│   ├── MessageFormatter.cpp
-│   ├── MessageFormatter.hpp
-│   └── pch.hpp
-├── data/
-│   ├── FastQueryDB.cpp # Facade封装
-│   ├── FastQueryDB.hpp
-│   ├── repository/
-│   │   ├── IDRepository.cpp # 数据查询
-│   │   └── IDRepository.hpp
-│   └── storage/
-│       ├── DBSerializer.cpp # 数据存储
-│       └── DBSerializer.hpp
+src/
 ├── main.cpp
-├── Utils
-│   ├── Validator.cpp #输入内容验证
-│   └── Validator.hpp
-└── View
-    ├── IGuiView.hpp
-    └── ImGui
-        ├── ImGuiView.cpp
-        ├── ImGuiView.hpp
-        └── UIConfig.hpp
+├── cmd_main.cpp
+├── common/
+├── core/
+│   ├── app/               # 应用服务与用例编排
+│   ├── data/              # 数据查询与仓储实现
+│   ├── infrastructure/    # 外部基础设施（数据库等）
+│   ├── io/                # 文件读取等 I/O
+│   ├── ports/             # 核心依赖的抽象接口
+│   └── utils/             # 核心通用工具
+└── presentation/
+    ├── cli/               # 命令行表现层
+    │   ├── input_parser.hpp
+    │   ├── framework/
+    │   └── impl/
+    └── gui/               # 图形界面表现层
+        ├── i_gui_view.hpp
+        ├── framework/
+        └── imgui/         # GUI 表现层
 ```
 
 ## 第三方库 (Third-Party Libraries)
@@ -46,3 +36,19 @@
 - **许可证**: [MIT License](https://github.com/ocornut/imgui/blob/master/LICENSE.txt)
 
 感谢其为本项目提供了强大的图形界面支持。
+
+## 静态链接构建
+
+默认启用静态链接（`AVLIB_STATIC_LINK=ON`），可用以下命令构建：
+
+```bash
+cmake -S . -B build -DAVLIB_STATIC_LINK=ON
+cmake --build build -j 8
+```
+
+如果要切回动态链接：
+
+```bash
+cmake -S . -B build -DAVLIB_STATIC_LINK=OFF
+cmake --build build -j 8
+```

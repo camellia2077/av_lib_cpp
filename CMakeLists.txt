@@ -5,6 +5,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FONTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fonts)
+option(AVLIB_STATIC_LINK "Prefer static linking to reduce runtime DLL dependencies" ON)
 
 # --- 使用变量定义可执行文件名 ---
 set(GUI_EXECUTABLE_NAME "MyAVLib_Gui")
@@ -52,6 +53,18 @@ target_link_libraries(${GUI_EXECUTABLE_NAME} PRIVATE
     ${OPENGL_LIBRARIES}
     SQLite::SQLite3
 )
+if(AVLIB_STATIC_LINK)
+    if(MSVC)
+        set_property(TARGET ${GUI_EXECUTABLE_NAME} PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    elseif(MINGW)
+        target_link_options(${GUI_EXECUTABLE_NAME} PRIVATE
+            -static
+            -static-libgcc
+            -static-libstdc++
+        )
+    endif()
+endif()
 
 # --- 运行前复制字体资源 ---
 add_custom_command(TARGET ${GUI_EXECUTABLE_NAME} POST_BUILD
@@ -76,3 +89,15 @@ target_precompile_headers(${CMD_EXECUTABLE_NAME} PRIVATE
 target_link_libraries(${CMD_EXECUTABLE_NAME} PRIVATE
     SQLite::SQLite3
 )
+if(AVLIB_STATIC_LINK)
+    if(MSVC)
+        set_property(TARGET ${CMD_EXECUTABLE_NAME} PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    elseif(MINGW)
+        target_link_options(${CMD_EXECUTABLE_NAME} PRIVATE
+            -static
+            -static-libgcc
+            -static-libstdc++
+        )
+    endif()
+endif()

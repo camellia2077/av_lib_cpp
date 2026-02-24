@@ -1,9 +1,9 @@
 // cmd_main.cpp
 #include <memory>
 
-#include "adapters/cli/framework/cli_app.hpp"
-#include "app/application.hpp"
-#include "infrastructure/database_manager.hpp"
+#include "presentation/cli/framework/cli_app.hpp"
+#include "core/app/application.hpp"
+#include "core/infrastructure/database_manager.hpp"
 
 int main() {
   Application app(std::make_unique<DatabaseManager>());

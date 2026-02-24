@@ -2,10 +2,10 @@
 
 #include <memory>
 
-#include "app/application.hpp"
-#include "infrastructure/database_manager.hpp"
-#include "view/imgui/framework/gui_app.hpp"
-#include "view/imgui/impl/im_gui_view.hpp"
+#include "core/app/application.hpp"
+#include "core/infrastructure/database_manager.hpp"
+#include "presentation/gui/imgui/framework/gui_app.hpp"
+#include "presentation/gui/imgui/impl/im_gui_view.hpp"
 
 auto main(int /*unused*/, char** /*unused*/) -> int {
   // 1. 创建应用逻辑层实例
