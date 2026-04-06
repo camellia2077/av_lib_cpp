@@ -1,4 +1,4 @@
-// ports/i_database_catalog.hpp
+// core/ports/i_database_catalog.hpp
 #ifndef I_DATABASE_CATALOG_HPP
 #define I_DATABASE_CATALOG_HPP
 
