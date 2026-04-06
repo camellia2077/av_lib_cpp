@@ -3,26 +3,24 @@
 
 ## 文件夹层级
 ```
-src/
-├── main.cpp
-├── cmd_main.cpp
-├── common/
-├── core/
-│   ├── app/               # 应用服务与用例编排
-│   ├── data/              # 数据查询与仓储实现
-│   ├── infrastructure/    # 外部基础设施（数据库等）
-│   ├── io/                # 文件读取等 I/O
-│   ├── ports/             # 核心依赖的抽象接口
-│   └── utils/             # 核心通用工具
-└── presentation/
-    ├── cli/               # 命令行表现层
-    │   ├── input_parser.hpp
-    │   ├── framework/
-    │   └── impl/
-    └── gui/               # 图形界面表现层
-        ├── i_gui_view.hpp
-        ├── framework/
-        └── imgui/         # GUI 表现层
+apps/                      # 应用入口与表现层
+├── cli/
+└── gui/
+src/                       # 核心业务实现
+└── core/
+    ├── app/               # 应用服务与用例编排
+    ├── data/              # 数据查询与仓储实现
+    ├── infrastructure/    # 外部基础设施（数据库等）
+    ├── io/                # 文件读取等 I/O
+    ├── ports/             # 核心依赖的抽象接口
+    └── utils/             # 核心通用工具
+third_party/               # 第三方依赖
+└── imgui/
+tools/
+└── script/
+tests/
+cmake/
+CMakeLists.txt
 ```
 
 ## 第三方库 (Third-Party Libraries)
@@ -42,13 +40,29 @@ src/
 默认启用静态链接（`AVLIB_STATIC_LINK=ON`），可用以下命令构建：
 
 ```bash
-cmake -S . -B build -DAVLIB_STATIC_LINK=ON
-cmake --build build -j 8
+python tools/script/run.py build --mode release
 ```
 
-如果要切回动态链接：
+快速调试构建：
 
 ```bash
-cmake -S . -B build -DAVLIB_STATIC_LINK=OFF
-cmake --build build -j 8
+python tools/script/run.py build --mode fast
+```
+
+执行 clang-tidy：
+
+```bash
+python tools/script/run.py build --mode tidy
+```
+
+运行 C++ 核心测试：
+
+```bash
+python tools/script/run.py test-core
+```
+
+运行 Python 端到端（CLI）冒烟测试：
+
+```bash
+python tools/script/run.py smoke-cli
 ```

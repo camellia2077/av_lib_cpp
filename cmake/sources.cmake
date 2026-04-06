@@ -1,9 +1,9 @@
 set(GUI_ENTRY_SOURCE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/gui/main.cpp
 )
 
 set(CMD_ENTRY_SOURCE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cmd_main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/cli/cmd_main.cpp
 )
 
 set(CORE_SOURCES
@@ -15,14 +15,14 @@ set(CORE_SOURCES
 )
 
 set(CLI_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/cli/framework/cli_app.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/cli/impl/CLICommands.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/cli/framework/cli_app.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/cli/impl/CLICommands.cpp
 )
 
 set(GUI_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/gui/imgui/framework/gui_app.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/gui/imgui/impl/imgui_settings_store.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/gui/imgui/impl/im_gui_view.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/gui/imgui/impl/theme_manager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/presentation/gui/imgui/impl/ui_panel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/gui/imgui/framework/gui_app.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/gui/imgui/impl/imgui_settings_store.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/gui/imgui/impl/im_gui_view.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/gui/imgui/impl/theme_manager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/gui/imgui/impl/ui_panel.cpp
 )

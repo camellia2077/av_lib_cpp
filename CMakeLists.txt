@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(FastQueryApp)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out/lib)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FONTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fonts)
 option(AVLIB_STATIC_LINK "Prefer static linking to reduce runtime DLL dependencies" ON)
+include(CTest)
 
 # --- 使用变量定义可执行文件名 ---
 set(GUI_EXECUTABLE_NAME "MyAVLib_Gui")
@@ -36,6 +39,7 @@ add_executable(${CMD_EXECUTABLE_NAME}
 
 # --- 为 GUI版本 配置 ---
 target_include_directories(${GUI_EXECUTABLE_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common
 )
@@ -66,6 +70,19 @@ if(AVLIB_STATIC_LINK)
     endif()
 endif()
 
+if(BUILD_TESTING)
+    add_executable(avlib_core_tests
+        tests/cpp/core_tests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core/utils/validator.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core/io/text_file_reader.cpp
+    )
+    target_include_directories(avlib_core_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/common
+    )
+    add_test(NAME avlib_core_tests COMMAND avlib_core_tests)
+endif()
+
 # --- 运行前复制字体资源 ---
 add_custom_command(TARGET ${GUI_EXECUTABLE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -75,6 +92,7 @@ add_custom_command(TARGET ${GUI_EXECUTABLE_NAME} POST_BUILD
 
 # --- 为 命令行版本 配置 ---
 target_include_directories(${CMD_EXECUTABLE_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common
 )
