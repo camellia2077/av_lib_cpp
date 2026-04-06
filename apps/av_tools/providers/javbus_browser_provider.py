@@ -11,6 +11,11 @@ from .utils import Candidate, expand_query_keys, select_best_candidate
 
 JAVBUS_CLEAN_TAG_PATTERN = re.compile(r"<[^>]+>")
 JAVBUS_CODE_PATTERN = re.compile(r"[A-Z]{2,10}-\d{2,6}", re.IGNORECASE)
+JAVBUS_DATE_HYPHEN_PATTERN = re.compile(r"\d{6}-\d{2,4}", re.IGNORECASE)
+JAVBUS_DATE_UNDERSCORE_PATTERN = re.compile(r"\d{6}_\d{3}", re.IGNORECASE)
+JAVBUS_CARIB_SUFFIX_PATTERN = re.compile(r"(\d{6}-\d{2,4})-CARIB", re.IGNORECASE)
+JAVBUS_IPPONDO_SUFFIX_PATTERN = re.compile(r"(\d{6}_\d{3})-1PONDO", re.IGNORECASE)
+JAVBUS_UNCENSORED_CODE_PATTERN = re.compile(r"^\d{6}[-_]\d{2,4}$", re.IGNORECASE)
 # JavBus can route automation-like contexts to Age Verification pages if the
 # browser context looks too generic. Keep UA/locale aligned with our probe tool.
 DEFAULT_BROWSER_USER_AGENT = (
@@ -56,8 +61,18 @@ class JavbusBrowserProvider:
 
     @staticmethod
     def _normalize_code(raw: str) -> str:
-        match = JAVBUS_CODE_PATTERN.search((raw or "").upper())
-        return match.group(0).upper() if match else ""
+        upper = (raw or "").upper()
+        for pattern in (
+            JAVBUS_CODE_PATTERN,
+            JAVBUS_DATE_HYPHEN_PATTERN,
+            JAVBUS_DATE_UNDERSCORE_PATTERN,
+            JAVBUS_CARIB_SUFFIX_PATTERN,
+            JAVBUS_IPPONDO_SUFFIX_PATTERN,
+        ):
+            match = pattern.search(upper)
+            if match:
+                return (match.group(1) if match.lastindex else match.group(0)).upper()
+        return ""
 
     @staticmethod
     def _safe_page_content(page, retries: int = 3) -> str:
@@ -143,6 +158,33 @@ class JavbusBrowserProvider:
                 )
             )
         return results
+
+    def _build_search_urls(self, key: str) -> list[str]:
+        urls: list[str] = []
+        normalized = key.strip()
+
+        # Uncensored/date-based ids are indexed under /uncensored/search/ first.
+        # Example: 031315-827 / 091416_382
+        if JAVBUS_UNCENSORED_CODE_PATTERN.fullmatch(normalized):
+            urls.append(f"{self.base_url}uncensored/search/{quote(normalized)}")
+            if "_" in normalized:
+                urls.append(
+                    f"{self.base_url}uncensored/search/{quote(normalized.replace('_', '-'))}"
+                )
+            elif "-" in normalized:
+                urls.append(
+                    f"{self.base_url}uncensored/search/{quote(normalized.replace('-', '_'))}"
+                )
+
+        urls.append(f"{self.base_url}search/{quote(normalized)}")
+        dedup: list[str] = []
+        seen: set[str] = set()
+        for item in urls:
+            if item in seen:
+                continue
+            seen.add(item)
+            dedup.append(item)
+        return dedup
 
     def _extract_info_value(self, info_root, labels: list[str]) -> str:
         for paragraph in info_root.select("p"):
@@ -230,74 +272,82 @@ class JavbusBrowserProvider:
         # JavBus path search. Skip them to avoid noisy false failures.
         query_keys = [key for key in expand_query_keys(movie_code) if " " not in key]
         for key in query_keys:
-            search_url = f"{self.base_url}search/{quote(key)}"
-            try:
-                status, html, final_url, title = self._browser_get(context, search_url)
-            except KeyboardInterrupt:
-                raise
-            except Exception as exc:  # pragma: no cover - runtime/browser dependent
-                errors.append(f"search[{key}]: {exc}")
-                continue
+            blocked_critical = False
+            for search_url in self._build_search_urls(key):
+                try:
+                    status, html, final_url, title = self._browser_get(context, search_url)
+                except KeyboardInterrupt:
+                    raise
+                except Exception as exc:  # pragma: no cover - runtime/browser dependent
+                    errors.append(f"search[{key}]<{search_url}>: {exc}")
+                    continue
 
-            block_reason = self._detect_block_reason(html, title, status)
-            if block_reason:
-                errors.append(f"search[{key}] blocked={block_reason} url={final_url}")
-                if block_reason in {"status=403", "age_verification", "cloudflare", "captcha"}:
-                    break
-                continue
-            if status == 404:
-                continue
-            if status >= 500:
-                errors.append(f"search[{key}] status={status}")
-                continue
+                block_reason = self._detect_block_reason(html, title, status)
+                if block_reason:
+                    errors.append(f"search[{key}] blocked={block_reason} url={final_url}")
+                    if block_reason in {"status=403", "age_verification", "cloudflare", "captcha"}:
+                        blocked_critical = True
+                        break
+                    continue
+                if status == 404:
+                    continue
+                if status >= 500:
+                    errors.append(f"search[{key}] status={status}")
+                    continue
 
-            candidates = self._parse_search_candidates(html)
-            chosen = select_best_candidate(movie_code, candidates)
-            if chosen is None:
-                continue
+                candidates = self._parse_search_candidates(html)
+                chosen = select_best_candidate(movie_code, candidates)
+                if chosen is None:
+                    continue
 
-            try:
-                detail_status, detail_html, detail_url, detail_title = self._browser_get(
-                    context,
-                    chosen.url,
+                try:
+                    detail_status, detail_html, detail_url, detail_title = self._browser_get(
+                        context,
+                        chosen.url,
+                    )
+                except KeyboardInterrupt:
+                    raise
+                except Exception as exc:  # pragma: no cover - runtime/browser dependent
+                    errors.append(f"detail[{chosen.url}]: {exc}")
+                    continue
+
+                detail_block_reason = self._detect_block_reason(detail_html, detail_title, detail_status)
+                if detail_block_reason:
+                    errors.append(f"detail[{chosen.url}] blocked={detail_block_reason} url={detail_url}")
+                    if detail_block_reason in {"status=403", "age_verification", "cloudflare", "captcha"}:
+                        blocked_critical = True
+                        break
+                    continue
+                if detail_status == 404:
+                    continue
+                if detail_status >= 500:
+                    errors.append(f"detail[{chosen.url}] status={detail_status}")
+                    continue
+
+                detail = self._parse_detail(detail_html, url=chosen.url)
+                if detail is None:
+                    errors.append(f"detail[{chosen.url}] parse failed")
+                    continue
+
+                return ProviderFetchResult(
+                    provider_name=self.name,
+                    status="success",
+                    movie=MovieInfo(
+                        movie_id=movie_code,
+                        title=detail.title or chosen.title,
+                        actors=detail.actors,
+                        tags=detail.tags,
+                        cover_url=detail.cover_url or chosen.cover,
+                        date=detail.date,
+                        studio=detail.studio,
+                        series=detail.series,
+                    ),
                 )
-            except KeyboardInterrupt:
-                raise
-            except Exception as exc:  # pragma: no cover - runtime/browser dependent
-                errors.append(f"detail[{chosen.url}]: {exc}")
-                continue
 
-            detail_block_reason = self._detect_block_reason(detail_html, detail_title, detail_status)
-            if detail_block_reason:
-                errors.append(f"detail[{chosen.url}] blocked={detail_block_reason} url={detail_url}")
-                if detail_block_reason in {"status=403", "age_verification", "cloudflare", "captcha"}:
-                    break
-                continue
-            if detail_status == 404:
-                continue
-            if detail_status >= 500:
-                errors.append(f"detail[{chosen.url}] status={detail_status}")
-                continue
-
-            detail = self._parse_detail(detail_html, url=chosen.url)
-            if detail is None:
-                errors.append(f"detail[{chosen.url}] parse failed")
-                continue
-
-            return ProviderFetchResult(
-                provider_name=self.name,
-                status="success",
-                movie=MovieInfo(
-                    movie_id=movie_code,
-                    title=detail.title or chosen.title,
-                    actors=detail.actors,
-                    tags=detail.tags,
-                    cover_url=detail.cover_url or chosen.cover,
-                    date=detail.date,
-                    studio=detail.studio,
-                    series=detail.series,
-                ),
-            )
+            if blocked_critical:
+                # Don't keep probing more key variants once we hit active
+                # anti-bot/verification blocks.
+                break
 
         if errors:
             return ProviderFetchResult(

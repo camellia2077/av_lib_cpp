@@ -7,6 +7,12 @@ from ..fetch_metadata.parser import extract_standard_movie_code
 
 SPLIT_CODE_PATTERN = re.compile(r"^([A-Z]{2,10})-(\d{2,6})$")
 LEADING_DIGIT_PREFIX_PATTERN = re.compile(r"^[0-9][A-Z]+[-_A-Z0-9]+$")
+CARIB_SUFFIX_PATTERN = re.compile(r"^(\d{6}-\d{2,4})-carib$", re.IGNORECASE)
+IPPONDO_SUFFIX_PATTERN = re.compile(r"^(\d{6}_\d{3})-1pondo$", re.IGNORECASE)
+DATE_HYPHEN_PATTERN = re.compile(r"^(\d{6}-\d{2,4})$")
+DATE_UNDERSCORE_PATTERN = re.compile(r"^(\d{6}_\d{3})$")
+HEYZO_CANONICAL_PATTERN = re.compile(r"^HEYZO-\d{4}$", re.IGNORECASE)
+TOKYO_HOT_CANONICAL_PATTERN = re.compile(r"^TOKYO-HOT-[A-Z]\d{4}$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -83,10 +89,10 @@ def select_best_candidate(
     target_code: str,
     candidates: list[Candidate],
 ) -> Candidate | None:
-    canonical = target_code.strip().upper()
+    canonical = _normalize_match_code(target_code)
     exact_candidates: list[Candidate] = []
     for candidate in candidates:
-        normalized = extract_standard_movie_code(candidate.code)
+        normalized = _normalize_match_code(candidate.code)
         if normalized == canonical:
             exact_candidates.append(candidate)
 
@@ -100,10 +106,41 @@ def select_best_candidate(
     ranked = sorted(
         exact_candidates,
         key=lambda item: (
-            levenshtein_distance(item.code.upper(), canonical),
+            levenshtein_distance(_normalize_match_code(item.code), canonical),
             len(item.code),
             item.url,
         ),
     )
     return ranked[0]
 
+
+def _normalize_match_code(raw: str) -> str:
+    value = raw.strip().upper()
+    normalized = extract_standard_movie_code(value)
+    if normalized:
+        return normalized
+
+    # Vendor canonical forms below are intentionally kept as-is. They are
+    # normalized by vendor rules already and don't fit generic AA-123 patterns.
+    if HEYZO_CANONICAL_PATTERN.fullmatch(value):
+        return value
+    if TOKYO_HOT_CANONICAL_PATTERN.fullmatch(value):
+        return value
+
+    matched = CARIB_SUFFIX_PATTERN.fullmatch(value)
+    if matched:
+        return matched.group(1).upper()
+
+    matched = IPPONDO_SUFFIX_PATTERN.fullmatch(value)
+    if matched:
+        return matched.group(1).upper()
+
+    matched = DATE_HYPHEN_PATTERN.fullmatch(value)
+    if matched:
+        return matched.group(1).upper()
+
+    matched = DATE_UNDERSCORE_PATTERN.fullmatch(value)
+    if matched:
+        return matched.group(1).upper()
+
+    return value

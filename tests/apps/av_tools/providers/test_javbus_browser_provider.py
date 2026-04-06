@@ -26,6 +26,12 @@ def test_javbus_browser_parse_search_candidates() -> None:
     assert candidates[0].url == "https://www.javbus.com/MOON-011"
 
 
+def test_javbus_browser_normalize_supports_uncensored_date_codes() -> None:
+    assert JavbusBrowserProvider._normalize_code("031315-827") == "031315-827"
+    assert JavbusBrowserProvider._normalize_code("031315-827-carib") == "031315-827"
+    assert JavbusBrowserProvider._normalize_code("091416_382-1pondo") == "091416_382"
+
+
 def test_javbus_browser_parse_detail_fields() -> None:
     provider = JavbusBrowserProvider(
         base_url="https://www.javbus.com/",
@@ -45,6 +51,20 @@ def test_javbus_browser_parse_detail_fields() -> None:
     assert detail.series == "Sample Series"
     assert detail.actors == ["天馬ゆい"]
     assert detail.tags == ["中出", "美少女"]
+
+
+def test_javbus_browser_builds_uncensored_search_urls_for_date_code() -> None:
+    provider = JavbusBrowserProvider(
+        base_url="https://www.javbus.com/",
+        headless=True,
+        nav_timeout_sec=15,
+    )
+
+    urls = provider._build_search_urls("091416_382")
+
+    assert urls[0].startswith("https://www.javbus.com/uncensored/search/")
+    assert any("/uncensored/search/091416-382" in item for item in urls)
+    assert any("/search/091416_382" in item for item in urls)
 
 
 def test_javbus_browser_fetch_with_context_uses_best_candidate(monkeypatch) -> None:

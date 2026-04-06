@@ -18,3 +18,17 @@ def test_select_best_candidate_prefers_exact_normalized_code() -> None:
     assert chosen is not None
     assert chosen.url == "https://x/1"
 
+
+def test_select_best_candidate_matches_uncensored_vendor_suffix() -> None:
+    candidates = [
+        Candidate(code="031315-827-CARIB", url="https://x/carib"),
+        Candidate(code="091416_382-1PONDO", url="https://x/1pondo"),
+    ]
+
+    chosen_carib = select_best_candidate("031315-827", candidates)
+    chosen_1pondo = select_best_candidate("091416_382", candidates)
+
+    assert chosen_carib is not None
+    assert chosen_carib.url == "https://x/carib"
+    assert chosen_1pondo is not None
+    assert chosen_1pondo.url == "https://x/1pondo"
