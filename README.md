@@ -66,3 +66,19 @@ python tools/script/run.py test-core
 ```bash
 python tools/script/run.py smoke-cli
 ```
+
+## Python AV 工具入口
+
+统一入口：
+
+```bash
+python -m apps.av_tools.run <subcommand> [args...]
+```
+
+常用子命令：
+
+```bash
+python -m apps.av_tools.run index-formatter "E:\\av\\日本"
+python -m apps.av_tools.run move-by-actor --input "D:\\videos"
+python -m apps.av_tools.run fetch-metadata --input "D:\\videos"
+```
