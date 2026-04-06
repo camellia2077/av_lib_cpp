@@ -1,0 +1,36 @@
+# Purpose:
+# This file stores rule trace assertions.
+# It verifies both the normalized output and which parse rule matched.
+# Each [[rule_trace]] entry has:
+# - raw_stem: input stem
+# - expected_value: expected normalized stem
+# - expected_rule: expected parse rule name (or omitted/null)
+# - is_exempt: whether exemption logic was used
+# - used_fallback: whether fallback cleanup was used
+
+[[rule_trace]]
+raw_stem = "ipsd-047A"
+expected_value = "IPSD-047-A"
+expected_rule = "hyphenated-code"
+is_exempt = false
+used_fallback = false
+
+[[rule_trace]]
+raw_stem = "ipsd048D.HD"
+expected_value = "IPSD-048-D"
+expected_rule = "compact-code-with-part"
+is_exempt = false
+used_fallback = false
+
+[[rule_trace]]
+raw_stem = "sdde538"
+expected_value = "SDDE-538"
+expected_rule = "compact-code"
+is_exempt = false
+used_fallback = false
+
+[[rule_trace]]
+raw_stem = "just some title"
+expected_value = "justsometitle"
+is_exempt = false
+used_fallback = true

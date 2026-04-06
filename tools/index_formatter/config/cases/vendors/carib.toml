@@ -1,0 +1,24 @@
+# Purpose:
+# Vendor-specific sanitize cases for Caribbeancom date-code format.
+
+[[core_mappings]]
+raw_stem = "031315-827-carib-720p"
+expected = "031315-827-carib"
+
+[[core_mappings]]
+raw_stem = "(Caribbean)(052716-172)ものすごい三穴蹂躙ノーカット特別版上原亜衣_apo8_iris2"
+expected = "052716-172-carib"
+
+[[rule_trace]]
+raw_stem = "031315-827-carib-720p"
+expected_value = "031315-827-carib"
+expected_rule = "carib-date-code"
+is_exempt = false
+used_fallback = false
+
+[[rule_trace]]
+raw_stem = "(Caribbean)(052716-172)ものすごい三穴蹂躙ノーカット特別版上原亜衣_apo8_iris2"
+expected_value = "052716-172-carib"
+expected_rule = "carib-date-code"
+is_exempt = false
+used_fallback = false

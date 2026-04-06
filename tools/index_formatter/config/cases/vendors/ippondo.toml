@@ -1,0 +1,35 @@
+# Purpose:
+# Vendor-specific sanitize cases for 1Pondo.
+
+[[core_mappings]]
+raw_stem = "091416_382"
+expected = "091416_382-1pondo"
+
+[[core_mappings]]
+raw_stem = "012026_234"
+expected = "012026_234-1pondo"
+
+[[core_mappings]]
+raw_stem = "091416_382-1pon-1080p"
+expected = "091416_382-1pondo"
+
+[[rule_trace]]
+raw_stem = "091416_382"
+expected_value = "091416_382-1pondo"
+expected_rule = "ippondo-code"
+is_exempt = false
+used_fallback = false
+
+[[rule_trace]]
+raw_stem = "012026_234"
+expected_value = "012026_234-1pondo"
+expected_rule = "ippondo-code"
+is_exempt = false
+used_fallback = false
+
+[[rule_trace]]
+raw_stem = "091416_382-1pon-1080p"
+expected_value = "091416_382-1pondo"
+expected_rule = "ippondo-code"
+is_exempt = false
+used_fallback = false

@@ -1,0 +1,74 @@
+# Purpose:
+# This file stores core "raw stem -> expected normalized stem" cases.
+# Use it to verify deterministic normalization behavior without directory context.
+# Each [[core_mappings]] entry has:
+# - raw_stem: input filename stem (without extension)
+# - expected: normalized output stem
+
+[[core_mappings]]
+raw_stem = "hhd800.com@OLM-164E"
+expected = "OLM-164-E"
+
+[[core_mappings]]
+raw_stem = "hhd800.com@RCTD-677"
+expected = "RCTD-677"
+
+[[core_mappings]]
+raw_stem = "[activehlj.com]@FWAY018_[4K]"
+expected = "FWAY-018"
+
+[[core_mappings]]
+raw_stem = "gg5.co@MIDV-274-C_GG5-C_GG5"
+expected = "MIDV-274"
+
+[[core_mappings]]
+raw_stem = "JAVZIP.NET-DROP-070"
+expected = "DROP-070"
+
+[[core_mappings]]
+raw_stem = "Maki Sarada – Dream Woman Vol.88 [DVDRIP]"
+expected = "MIGD-462"
+
+[[core_mappings]]
+raw_stem = "ipsd048A.HD"
+expected = "IPSD-048-A"
+
+[[core_mappings]]
+raw_stem = "ipsd048B.HD"
+expected = "IPSD-048-B"
+
+[[core_mappings]]
+raw_stem = "ipsd048C.HD"
+expected = "IPSD-048-C"
+
+[[core_mappings]]
+raw_stem = "ipsd048D.HD"
+expected = "IPSD-048-D"
+
+[[core_mappings]]
+raw_stem = "ipsd-047A"
+expected = "IPSD-047-A"
+
+[[core_mappings]]
+raw_stem = "SDMU-958_A"
+expected = "SDMU-958-A"
+
+[[core_mappings]]
+raw_stem = "[98t.tv]sdmu-978-1"
+expected = "SDMU-978-1"
+
+[[core_mappings]]
+raw_stem = "(WSP-115) 4時間"
+expected = "WSP-115"
+
+[[core_mappings]]
+raw_stem = "SSIS-387-C_60FPS_X1080X"
+expected = "SSIS-387"
+
+[[core_mappings]]
+raw_stem = "BOKD-032.1080p"
+expected = "BOKD-032"
+
+[[core_mappings]]
+raw_stem = "BOKD-035.720p"
+expected = "BOKD-035"

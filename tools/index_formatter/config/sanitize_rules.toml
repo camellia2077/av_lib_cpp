@@ -1,0 +1,36 @@
+[sanitize]
+# Tokens removed from stem before parsing code patterns.
+special_remove_tokens = [
+  "[鱼香肉丝]",
+  "hhd800.com@",
+  "c800.me@",
+  "c080.me@",
+  "icao.me@",
+  "gg5.co@",
+  "[99u.me]",
+  "[44x.me]",
+  "[98t.tv]",
+  "[Thz.la]",
+  "[88q.me]",
+  "rh2048.com@",
+  "@jnty60.app",
+]
+
+# Stem-level noise labels, not true video extensions.
+# Example: ipsd048D.HD.wmv -> IPSD-048-D.wmv
+trailing_stem_labels = [
+  "HD",
+  "FHD",
+  "UHD",
+  "SD",
+  "4K",
+  "2K",
+  "2160P",
+  "1080P",
+  "720P",
+]
+
+[special_cases]
+# Exact stem mapping after preprocess. Keep keys case-sensitive.
+# "abc123.sample" = "ABC-123"
+"Maki Sarada – Dream Woman Vol.88 [DVDRIP]" = "MIGD-462"

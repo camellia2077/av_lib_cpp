@@ -1,0 +1,101 @@
+# Purpose:
+# This file stores directory-context rename scenarios.
+# Unlike core mappings, these cases depend on sibling files in the same folder.
+# Each [[directory_cases]] entry defines:
+# - initial_files: files to create before running process()
+# - apply_changes: preview(false) or apply(true)
+# - expected_present_files / expected_absent_files: final filesystem assertions
+# - expected_scanned / expected_renamed: process() counters
+
+[[directory_cases]]
+name = "preview_single_file_does_not_rename"
+apply_changes = false
+initial_files = ["ipsd048D.HD.wmv"]
+expected_present_files = ["ipsd048D.HD.wmv"]
+expected_absent_files = ["IPSD-048.wmv"]
+expected_scanned = 1
+expected_renamed = 1
+
+[[directory_cases]]
+name = "apply_single_file_renames"
+apply_changes = true
+initial_files = ["ipsd048D.HD.wmv"]
+expected_present_files = ["IPSD-048.wmv"]
+expected_absent_files = ["ipsd048D.HD.wmv"]
+expected_scanned = 1
+expected_renamed = 1
+
+[[directory_cases]]
+name = "apply_collision_adds_numeric_suffix"
+apply_changes = true
+initial_files = ["IPSD-048.wmv", "ipsd048D.HD.wmv"]
+expected_present_files = ["IPSD-048.wmv", "IPSD-048-1.wmv"]
+expected_absent_files = ["ipsd048D.HD.wmv"]
+expected_scanned = 2
+expected_renamed = 1
+
+[[directory_cases]]
+name = "single_base_letter_part_is_collapsed"
+apply_changes = true
+initial_files = ["MVSD-344-C.mp4"]
+expected_present_files = ["MVSD-344.mp4"]
+expected_absent_files = ["MVSD-344-C.mp4"]
+expected_scanned = 1
+expected_renamed = 1
+
+[[directory_cases]]
+name = "multi_part_same_base_keeps_letter_parts"
+apply_changes = true
+initial_files = ["MVSD-344A.mp4", "MVSD-344B.mp4"]
+expected_present_files = ["MVSD-344-A.mp4", "MVSD-344-B.mp4"]
+expected_absent_files = ["MVSD-344A.mp4", "MVSD-344B.mp4"]
+expected_scanned = 2
+expected_renamed = 2
+
+[[directory_cases]]
+name = "mvsd_294_verbose_numeric_parts_kept"
+apply_changes = true
+initial_files = [
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 1.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 2.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 3.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 4.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 5.mkv",
+]
+expected_present_files = [
+  "MVSD-294-1.mkv",
+  "MVSD-294-2.mkv",
+  "MVSD-294-3.mkv",
+  "MVSD-294-4.mkv",
+  "MVSD-294-5.mkv",
+]
+expected_absent_files = [
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 1.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 2.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 3.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 4.mkv",
+  "MVSD-294 Lena Aoi, Maki Hoshikawa - Real Semen Lovers - AI REMASTER - 5.mkv",
+]
+expected_scanned = 5
+expected_renamed = 5
+
+[[directory_cases]]
+name = "vrkm_r_series_starts_from_one"
+apply_changes = true
+initial_files = [
+  "icao.me@vrkm00385-R1.mp4",
+  "icao.me@vrkm00385-R2.mp4",
+  "icao.me@vrkm00385-R3.mp4",
+]
+expected_present_files = [
+  "VRKM-00385-1.mp4",
+  "VRKM-00385-2.mp4",
+  "VRKM-00385-3.mp4",
+]
+expected_absent_files = [
+  "icao.me@vrkm00385-R1.mp4",
+  "icao.me@vrkm00385-R2.mp4",
+  "icao.me@vrkm00385-R3.mp4",
+]
+expected_scanned = 3
+expected_renamed = 3

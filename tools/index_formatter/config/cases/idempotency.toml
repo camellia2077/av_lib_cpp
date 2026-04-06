@@ -1,0 +1,22 @@
+# Purpose:
+# This file stores idempotency inputs.
+# For every raw stem here, tests assert:
+# sanitize(sanitize(raw_stem)) == sanitize(raw_stem)
+# This guards against rule conflicts and unstable rewrites.
+
+[idempotency]
+raw_stems = [
+  "ipsd048D.HD",
+  "ipsd-047A",
+  "SDMU-958_A",
+  "[98t.tv]sdmu-978-1",
+  "(WSP-115) 4時間",
+  "091416_382",
+  "012026_234",
+  "031315-827-carib-720p",
+  "heyzo_hd_0904",
+  "heyzo_hd_0904_full",
+  "n1039_kaori_shiraishi_eb_n_fhd",
+  "just some title",
+  "[]{}()",
+]

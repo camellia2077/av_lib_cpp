@@ -1,0 +1,17 @@
+# Purpose:
+# Vendor-specific sanitize cases for TOKYO-HOT.
+
+[[core_mappings]]
+raw_stem = "n1039_kaori_shiraishi_eb_n_fhd"
+expected = "TOKYO-HOT-N1039"
+
+[[core_mappings]]
+raw_stem = "n1083_keiko_kyono_sg_n_fhd"
+expected = "TOKYO-HOT-N1083"
+
+[[rule_trace]]
+raw_stem = "n1039_kaori_shiraishi_eb_n_fhd"
+expected_value = "TOKYO-HOT-N1039"
+expected_rule = "tokyo-hot-code"
+is_exempt = false
+used_fallback = false
