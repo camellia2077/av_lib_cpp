@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
-FailureReason = Literal["INVALID_INPUT", "NO_CODE", "API_ERROR"]
+FailureReason = Literal["INVALID_INPUT", "NO_CODE", "API_ERROR", "NOT_FOUND"]
 
 
 @dataclass(frozen=True)
@@ -14,6 +14,11 @@ class MetadataRecord:
     actors: list[str]
     tags: list[str]
     cover_url: str
+    date: str = ""
+    studio: str = ""
+    series: str = ""
+    provider: str = ""
+    provider_attempts: list[dict[str, str]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -22,6 +27,7 @@ class MetadataFailure:
     reason: FailureReason
     message: str
     movie_code: str = ""
+    provider_attempts: list[dict[str, str]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

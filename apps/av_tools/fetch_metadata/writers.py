@@ -27,16 +27,32 @@ def _record_payload(record: MetadataRecord) -> dict[str, Any]:
         "actors": record.actors,
         "tags": record.tags,
         "cover_url": record.cover_url,
+        "date": record.date,
+        "studio": record.studio,
+        "series": record.series,
+        "provider": record.provider,
+        "provider_attempts": record.provider_attempts,
     }
 
 
-def _failure_payload(failure: MetadataFailure) -> dict[str, str]:
-    return {
+def _failure_payload(failure: MetadataFailure) -> dict[str, Any]:
+    payload: dict[str, Any] = {
         "file_path": failure.file_path,
         "movie_code": failure.movie_code,
         "reason": failure.reason,
         "message": failure.message,
+        "provider_attempts": failure.provider_attempts,
     }
+    return payload
+
+
+def _flatten_provider_attempts(attempts: list[dict[str, str]]) -> str:
+    if not attempts:
+        return ""
+    return "; ".join(
+        f"{item.get('provider','')}:{item.get('status','')}"
+        for item in attempts
+    )
 
 
 class _StreamingCsvFile:
@@ -69,11 +85,22 @@ class StreamingReportWriter:
         self.failed_csv_path = output_dir / "failed.csv"
         self._result_csv = _StreamingCsvFile(
             self.result_csv_path,
-            ["actors", "movie_code", "title", "tags", "cover_url"],
+            [
+                "actors",
+                "movie_code",
+                "title",
+                "tags",
+                "cover_url",
+                "date",
+                "studio",
+                "series",
+                "provider",
+                "provider_attempts",
+            ],
         )
         self._failed_csv = _StreamingCsvFile(
             self.failed_csv_path,
-            ["reason", "movie_code", "message"],
+            ["reason", "movie_code", "message", "provider_attempts"],
         )
 
     def append_success(self, record: MetadataRecord) -> None:
@@ -84,12 +111,22 @@ class StreamingReportWriter:
                 record.title,
                 ", ".join(record.tags),
                 record.cover_url,
+                record.date,
+                record.studio,
+                record.series,
+                record.provider,
+                _flatten_provider_attempts(record.provider_attempts),
             ]
         )
 
     def append_failure(self, failure: MetadataFailure) -> None:
         self._failed_csv.append(
-            [failure.reason, failure.movie_code, failure.message]
+            [
+                failure.reason,
+                failure.movie_code,
+                failure.message,
+                _flatten_provider_attempts(failure.provider_attempts),
+            ]
         )
 
     def close(self) -> None:
@@ -160,7 +197,20 @@ def write_reports(
 
     with result_csv_path.open("w", encoding="utf-8", newline="") as fp:
         writer = csv.writer(fp)
-        writer.writerow(["actors", "movie_code", "title", "tags", "cover_url"])
+        writer.writerow(
+            [
+                "actors",
+                "movie_code",
+                "title",
+                "tags",
+                "cover_url",
+                "date",
+                "studio",
+                "series",
+                "provider",
+                "provider_attempts",
+            ]
+        )
         for record in records:
             writer.writerow(
                 [
@@ -169,18 +219,24 @@ def write_reports(
                     record.title,
                     ", ".join(record.tags),
                     record.cover_url,
+                    record.date,
+                    record.studio,
+                    record.series,
+                    record.provider,
+                    _flatten_provider_attempts(record.provider_attempts),
                 ]
             )
 
     with failed_csv_path.open("w", encoding="utf-8", newline="") as fp:
         writer = csv.writer(fp)
-        writer.writerow(["reason", "movie_code", "message"])
+        writer.writerow(["reason", "movie_code", "message", "provider_attempts"])
         for failure in failures:
             writer.writerow(
                 [
                     failure.reason,
                     failure.movie_code,
                     failure.message,
+                    _flatten_provider_attempts(failure.provider_attempts),
                 ]
             )
 

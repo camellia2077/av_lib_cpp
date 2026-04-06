@@ -10,3 +10,6 @@ class MovieInfo:
     actors: list[str]
     tags: list[str] | None = None
     cover_url: str = ""
+    date: str = ""
+    studio: str = ""
+    series: str = ""

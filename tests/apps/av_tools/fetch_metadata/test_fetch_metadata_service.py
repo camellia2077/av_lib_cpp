@@ -4,11 +4,20 @@ from apps.av_tools.fetch_metadata import service
 from apps.av_tools.fetch_metadata.models import MetadataFailure
 from apps.av_tools.move_by_actor.app.config import Config
 from apps.av_tools.move_by_actor.app.models import MovieInfo
+from apps.av_tools.providers.base import ProviderAttempt
 
 
 class _FakeProviderResult:
-    def __init__(self, movie: MovieInfo) -> None:
+    def __init__(self, movie: MovieInfo, provider_name: str = "fake_provider") -> None:
         self.movie = movie
+        self.provider_name = provider_name
+        self.attempts = [
+            ProviderAttempt(
+                provider_name=provider_name,
+                status="success",
+                message="",
+            )
+        ]
 
 
 class _FakeProviderManager:

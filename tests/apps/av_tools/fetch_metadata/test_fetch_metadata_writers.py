@@ -18,6 +18,13 @@ def test_write_reports_creates_json_and_csv_outputs(tmp_path: Path) -> None:
             actors=["Actor A", "Actor B"],
             tags=["NTR", "Drama"],
             cover_url="https://example.com/c.jpg",
+            date="2026-01-01",
+            studio="StudioA",
+            series="SeriesA",
+            provider="javdb",
+            provider_attempts=[
+                {"provider": "javdb", "status": "success", "message": ""}
+            ],
         )
     ]
     failures = [
@@ -46,13 +53,17 @@ def test_write_reports_creates_json_and_csv_outputs(tmp_path: Path) -> None:
     assert failed_payload["summary"]["failed_count"] == 1
     assert result_payload["items"][0]["cover_url"] == "https://example.com/c.jpg"
     assert result_payload["items"][0]["tags"] == ["NTR", "Drama"]
+    assert result_payload["items"][0]["provider"] == "javdb"
 
     result_csv = outputs["result_csv"].read_text(encoding="utf-8")
     failed_csv = outputs["failed_csv"].read_text(encoding="utf-8")
-    assert "actors,movie_code,title,tags,cover_url" in result_csv
+    assert (
+        "actors,movie_code,title,tags,cover_url,date,studio,series,provider,provider_attempts"
+        in result_csv
+    )
     assert "ABC-123" in result_csv
     assert "NTR, Drama" in result_csv
-    assert "reason,movie_code,message" in failed_csv
+    assert "reason,movie_code,message,provider_attempts" in failed_csv
     assert "NO_CODE" in failed_csv
 
 
@@ -66,6 +77,7 @@ def test_streaming_report_writer_appends_rows(tmp_path: Path) -> None:
             actors=["Actor"],
             tags=["Tag"],
             cover_url="https://example.com/c.jpg",
+            provider="javdb",
         )
     )
     writer.append_failure(

@@ -1,28 +1,6 @@
 # av_lib_cpp
 查询av是否下载过，看过
 
-## 文件夹层级
-```
-apps/                      # 应用入口与表现层
-├── cli/
-└── gui/
-src/                       # 核心业务实现
-└── core/
-    ├── app/               # 应用服务与用例编排
-    ├── data/              # 数据查询与仓储实现
-    ├── infrastructure/    # 外部基础设施（数据库等）
-    ├── io/                # 文件读取等 I/O
-    ├── ports/             # 核心依赖的抽象接口
-    └── utils/             # 核心通用工具
-third_party/               # 第三方依赖
-└── imgui/
-tools/
-└── script/
-tests/
-cmake/
-CMakeLists.txt
-```
-
 ## 第三方库 (Third-Party Libraries)
 
 本项目使用了以下第三方库：
@@ -82,3 +60,12 @@ python -m apps.av_tools.run index-formatter "E:\\av\\日本"
 python -m apps.av_tools.run move-by-actor --input "D:\\videos"
 python -m apps.av_tools.run fetch-metadata --input "D:\\videos"
 ```
+
+## 设计参考
+
+`apps/av_tools` 的多源元数据抓取与 Provider 抽象思路，参考了
+[`JavScraper/Emby.Plugins.JavScraper`](https://github.com/JavScraper/Emby.Plugins.JavScraper)
+在数据源编排、字段归一化和扩展性方面的实践。
+
+当前仓库为独立实现，按本项目需求使用 Python 架构与模块边界组织代码，
+并未直接复用该仓库的插件代码。

@@ -19,3 +19,39 @@ poll_interval_sec = 1.0
 
 # If true and this script started the API process, stop it on exit.
 stop_on_exit = false
+
+[providers]
+# Metadata provider order for fetch-metadata fallback chain.
+enabled = ["javdb", "javbus_api", "r18"]
+
+[providers.network]
+# Provider-side request timeout for web scrapers.
+timeout_sec = 20
+# Sleep between canonical movie-code requests.
+request_interval_sec = 1.0
+
+[providers.javdb]
+enabled = true
+base_url = "https://javdb8.com/"
+
+[providers.javbus_api]
+enabled = true
+
+[providers.r18]
+enabled = true
+base_url = "https://www.r18.com/"
+
+[providers.javbus_browser]
+enabled = false
+base_url = "https://www.javbus.com/"
+headless = true
+nav_timeout_sec = 15
+
+[providers.browser_fallback]
+# Browser fallback mode:
+# - off: disable browser fallback
+# - on_error: run browser only if javdb/javbus_api/r18 all fail
+# - always: run browser first (debug)
+mode = "off"
+headless = true
+nav_timeout_sec = 15

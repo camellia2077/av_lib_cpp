@@ -160,10 +160,21 @@ def get_movie_info(movie_code: str, cfg: Config) -> MovieInfo:
         raise RuntimeError(f"API查询失败: {response.status_code} {response.text}")
 
     data = response.json()
+    producer = data.get("producer")
+    series = data.get("series")
+    studio_name = ""
+    series_name = ""
+    if isinstance(producer, dict):
+        studio_name = str(producer.get("name") or "").strip()
+    if isinstance(series, dict):
+        series_name = str(series.get("name") or "").strip()
     return MovieInfo(
         movie_id=str(data.get("id") or movie_id),
         title=str(data.get("title") or ""),
         actors=extract_actor_names(data),
         tags=extract_tag_names(data),
         cover_url=extract_cover_url(data),
+        date=str(data.get("date") or ""),
+        studio=studio_name,
+        series=series_name,
     )
