@@ -1,0 +1,21 @@
+[api]
+# If true, try to start the API service automatically when healthcheck fails.
+auto_start = false
+
+# Local javbus-api project directory, used with `start_command`.
+project_dir = "C:\\code\\javbus-api"
+
+# Command to start API service in `project_dir`.
+start_command = "npm start"
+
+# URL used to probe whether the API service is up.
+healthcheck_url = "http://127.0.0.1:3000/"
+
+# Max wait time after starting the API service.
+startup_timeout_sec = 60
+
+# Healthcheck polling interval.
+poll_interval_sec = 1.0
+
+# If true and this script started the API process, stop it on exit.
+stop_on_exit = false
