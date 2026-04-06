@@ -4,17 +4,17 @@ import shutil
 import time
 
 from .cmake_utils import cmake_define, run_command
-from .paths import SCRIPT_DIR, SOURCE_DIR
+from .paths import BUILD_ROOT_DIR, OUT_DIR, SCRIPT_DIR, SOURCE_DIR
 
 
 def get_mode_config(mode):
     if mode == "release":
-        build_dir = SOURCE_DIR / "build"
+        build_dir = BUILD_ROOT_DIR / "release"
         build_type = "Release"
         extra_defines = [cmake_define("AVLIB_STATIC_LINK", "ON")]
         build_target = None
     elif mode == "fast":
-        build_dir = SOURCE_DIR / "build_fast"
+        build_dir = BUILD_ROOT_DIR / "fast"
         build_type = "Debug"
         extra_defines = [
             cmake_define("AVLIB_STATIC_LINK", "ON"),
@@ -25,7 +25,7 @@ def get_mode_config(mode):
         ]
         build_target = None
     elif mode == "tidy":
-        build_dir = SOURCE_DIR / "build_tidy"
+        build_dir = BUILD_ROOT_DIR / "tidy"
         build_type = "Debug"
         extra_defines = [
             cmake_define("AVLIB_STATIC_LINK", "ON"),
@@ -49,7 +49,7 @@ def run_build(args):
     print(f"--- 构建模式: {args.mode}")
 
     build_path, build_type, extra_defines, build_target = get_mode_config(args.mode)
-    build_path.mkdir(exist_ok=True)
+    build_path.mkdir(parents=True, exist_ok=True)
     print(f"--- 构建目录 '{build_path}' 已准备就绪 (不清空)。")
 
     cmake_configure_command = [
@@ -85,7 +85,7 @@ def run_build(args):
     if build_target:
         print(f"--- 目标 '{build_target}' 执行完成。")
     else:
-        print(f"--- 可执行文件位于 '{build_path}/bin' 目录中。 ---")
+        print(f"--- 可执行文件位于 '{OUT_DIR / 'bin'}' 目录中。 ---")
     print("--- 提示: 第一次编译会较慢，后续修改代码后的编译会因为缓存而加速。")
     print(f"--- 总耗时: {duration:.2f} 秒 ---")
 

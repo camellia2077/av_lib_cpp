@@ -3,9 +3,7 @@ assitance_tools/
 
 
 __pycache__/
-build/
-build_tidy/
-build_fast/
+out/
 
 smoke/
 

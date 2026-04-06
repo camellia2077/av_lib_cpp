@@ -21,9 +21,9 @@ efgh5678
 
 ## 1) CLI smoke test (automated)
 1. Build:
-   `cmake -S . -B build_smoke && cmake --build build_smoke -j 8`
+   `python .\tools\script\run.py build --mode release`
 2. Run:
-   `powershell -ExecutionPolicy Bypass -File .\script\test_cli_smoke.ps1`
+   `python .\tools\script\run.py smoke-cli`
 3. Pass criteria:
    - Import result contains success count `4`.
    - Query `abc-1234` returns found `1`.
@@ -32,7 +32,7 @@ efgh5678
 
 ## 2) GUI smoke test (manual)
 1. Start GUI:
-   `.\build_smoke\bin\MyAVLib_Gui.exe`
+   `.\out\bin\MyAVLib_Gui.exe`
 2. In GUI, create a new database (for example: `smoke_gui_001`).
 3. In `从 .txt 文件导入到当前库`:
    - Set path to `tests/smoke/test_ids.txt` (use absolute path).

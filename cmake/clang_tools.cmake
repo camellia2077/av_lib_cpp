@@ -17,9 +17,9 @@ if(ENABLE_CLANG_TIDY)
         )
         find_package(Python3 COMPONENTS Interpreter)
         if(Python3_Interpreter_FOUND)
-            set(_clang_tidy_runner "${CMAKE_CURRENT_SOURCE_DIR}/script/build.py")
+            set(_clang_tidy_runner "${CMAKE_CURRENT_SOURCE_DIR}/tools/script/run.py")
             set(_clang_tidy_runner_args
-                --run-clang-tidy
+                clang-tidy
                 --build-dir "${CMAKE_BINARY_DIR}"
                 --clang-tidy "${CLANG_TIDY_EXE}"
             )
