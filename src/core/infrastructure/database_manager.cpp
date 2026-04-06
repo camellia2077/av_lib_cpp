@@ -1,4 +1,4 @@
-// infrastructure/database_manager.cpp
+// core/infrastructure/database_manager.cpp
 #include "core/infrastructure/database_manager.hpp"
 
 #include <filesystem>

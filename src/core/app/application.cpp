@@ -1,4 +1,4 @@
-// app/application.cpp
+// core/app/application.cpp
 #include "core/app/application.hpp"
 
 #include <stdexcept>

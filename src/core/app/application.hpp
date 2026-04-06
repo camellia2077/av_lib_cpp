@@ -1,4 +1,4 @@
-// app/application.hpp
+// core/app/application.hpp
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 

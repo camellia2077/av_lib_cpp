@@ -1,4 +1,4 @@
-// data/fast_query_db.hpp
+// core/data/fast_query_db.hpp
 #ifndef FAST_QUERY_D_B_HPP
 #define FAST_QUERY_D_B_HPP
 
